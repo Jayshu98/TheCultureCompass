@@ -8,6 +8,7 @@ struct PostCardView: View {
 
     @State private var commentText = ""
     @State private var showComments = false
+    @State private var showZoomImage = false
 
     private var isOwner: Bool {
         Auth.auth().currentUser?.uid == post.userId
@@ -15,23 +16,39 @@ struct PostCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Header
+            // Header — clickable profile pic
             HStack {
-                Circle()
-                    .fill(Color.ccBrown)
-                    .frame(width: 36, height: 36)
-                    .overlay(
-                        Text(String(post.user.prefix(1)).uppercased())
-                            .font(.caption.bold())
-                            .foregroundColor(.ccGold)
-                    )
+                NavigationLink(destination: UserPassportScreen(userId: post.userId)) {
+                    Circle()
+                        .fill(Color.ccBrown)
+                        .frame(width: 36, height: 36)
+                        .overlay(
+                            Text(String(post.user.prefix(1)).uppercased())
+                                .font(.caption.bold())
+                                .foregroundColor(.ccGold)
+                        )
+                }
+
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(post.user)
-                        .font(.subheadline.bold())
-                        .foregroundColor(.ccLightText)
-                    Text(post.timestamp, style: .relative)
-                        .font(.caption2)
-                        .foregroundColor(.ccSubtext)
+                    NavigationLink(destination: UserPassportScreen(userId: post.userId)) {
+                        Text(post.user)
+                            .font(.subheadline.bold())
+                            .foregroundColor(.ccLightText)
+                    }
+                    HStack(spacing: 6) {
+                        Text(post.timestamp, format: .dateTime.month(.abbreviated).day().hour().minute())
+                            .font(.caption2)
+                            .foregroundColor(.ccSubtext)
+                        if !post.location.isEmpty {
+                            HStack(spacing: 2) {
+                                Image(systemName: "mappin")
+                                    .font(.system(size: 8))
+                                Text(post.location)
+                                    .font(.caption2)
+                            }
+                            .foregroundColor(.ccGold)
+                        }
+                    }
                 }
                 Spacer()
                 if isOwner {
@@ -50,7 +67,7 @@ struct PostCardView: View {
                     .foregroundColor(.ccLightText)
             }
 
-            // Image
+            // Image — tappable to zoom
             if !post.imageURL.isEmpty {
                 AsyncImage(url: URL(string: post.imageURL)) { phase in
                     switch phase {
@@ -60,6 +77,7 @@ struct PostCardView: View {
                             .aspectRatio(contentMode: .fill)
                             .frame(maxHeight: 300)
                             .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .onTapGesture { showZoomImage = true }
                     case .failure:
                         RoundedRectangle(cornerRadius: 12)
                             .fill(Color.ccCardBg)
@@ -91,17 +109,24 @@ struct PostCardView: View {
                 Spacer()
             }
 
-            // Comments
+            // Comments with timestamps
             if showComments {
                 VStack(alignment: .leading, spacing: 8) {
                     ForEach(post.comments) { comment in
-                        HStack(alignment: .top, spacing: 8) {
-                            Text(comment.user)
-                                .font(.caption.bold())
-                                .foregroundColor(.ccGold)
-                            Text(comment.comment)
-                                .font(.caption)
-                                .foregroundColor(.ccLightText)
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack(alignment: .top, spacing: 8) {
+                                NavigationLink(destination: UserPassportScreen(userId: comment.userId)) {
+                                    Text(comment.user)
+                                        .font(.caption.bold())
+                                        .foregroundColor(.ccGold)
+                                }
+                                Text(comment.comment)
+                                    .font(.caption)
+                                    .foregroundColor(.ccLightText)
+                            }
+                            Text(comment.timestamp, format: .dateTime.month(.abbreviated).day().hour().minute())
+                                .font(.system(size: 9))
+                                .foregroundColor(.ccSubtext)
                         }
                     }
 
@@ -127,5 +152,8 @@ struct PostCardView: View {
             }
         }
         .ccCard()
+        .fullScreenCover(isPresented: $showZoomImage) {
+            ZoomableImageView(url: post.imageURL, location: post.location)
+        }
     }
 }

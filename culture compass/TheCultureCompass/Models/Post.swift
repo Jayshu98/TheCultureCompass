@@ -21,6 +21,7 @@ struct Post: Identifiable, Codable, Equatable {
     var userId: String
     var caption: String
     var imageURL: String
+    var location: String
     var timestamp: Date
     var comments: [PostComment]
 

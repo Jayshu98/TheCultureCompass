@@ -38,7 +38,7 @@ final class PostDataManager: ObservableObject {
         listener = nil
     }
 
-    func createPost(caption: String, imageData: Data?) async {
+    func createPost(caption: String, imageData: Data?, location: String = "") async {
         guard let user = Auth.auth().currentUser else { return }
         isLoading = true
         do {
@@ -61,6 +61,7 @@ final class PostDataManager: ObservableObject {
                 userId: user.uid,
                 caption: caption,
                 imageURL: imageURL,
+                location: location,
                 timestamp: Date(),
                 comments: []
             )

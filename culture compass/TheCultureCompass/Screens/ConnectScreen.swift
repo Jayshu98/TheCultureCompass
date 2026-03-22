@@ -57,9 +57,7 @@ struct ConnectScreen: View {
                                     GridItem(.flexible())
                                 ], spacing: 12) {
                                     ForEach(grouped[region] ?? []) { country in
-                                        NavigationLink(destination: ChatFeedScreen(country: country)) {
-                                            CountryCell(country: country)
-                                        }
+                                        CountryCell(country: country)
                                     }
                                 }
                                 .padding(.horizontal)
@@ -84,6 +82,19 @@ private struct CountryCell: View {
                 .font(.caption2.bold())
                 .foregroundColor(.ccLightText)
                 .lineLimit(1)
+
+            HStack(spacing: 12) {
+                NavigationLink(destination: ChatFeedScreen(country: country)) {
+                    Image(systemName: "bubble.left.fill")
+                        .font(.caption2)
+                        .foregroundColor(.ccGold)
+                }
+                NavigationLink(destination: SafetyRatingsScreen(country: country)) {
+                    Image(systemName: "shield.fill")
+                        .font(.caption2)
+                        .foregroundColor(.ccGold)
+                }
+            }
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)

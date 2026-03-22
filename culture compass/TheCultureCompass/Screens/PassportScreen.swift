@@ -8,6 +8,7 @@ struct PassportScreen: View {
     @State private var scrapbookData: Data?
     @State private var isEditingBio = false
     @State private var bioText = ""
+    @State private var selectedPhoto: String?
 
     var body: some View {
         ZStack {
@@ -69,6 +70,20 @@ struct PassportScreen: View {
                         }
                     }
                     .padding(.top)
+
+                    // Quick links
+                    HStack(spacing: 12) {
+                        NavigationLink(destination: AchievementsScreen()) {
+                            QuickLinkPill(icon: "trophy.fill", label: "Achievements")
+                        }
+                        NavigationLink(destination: ItineraryScreen()) {
+                            QuickLinkPill(icon: "map.fill", label: "Itineraries")
+                        }
+                        NavigationLink(destination: SettingsView()) {
+                            QuickLinkPill(icon: "gearshape.fill", label: "Settings")
+                        }
+                    }
+                    .padding(.horizontal)
 
                     // Country Badges
                     if !profileManager.user.visitedCountries.isEmpty {
@@ -135,6 +150,7 @@ struct PassportScreen: View {
                                     }
                                     .frame(height: 120)
                                     .clipShape(RoundedRectangle(cornerRadius: 8))
+                                    .onTapGesture { selectedPhoto = url }
                                     .contextMenu {
                                         Button(role: .destructive) {
                                             Task { await profileManager.removeScrapbookPhoto(url) }
@@ -168,5 +184,28 @@ struct PassportScreen: View {
             ImagePicker(imageData: $scrapbookData)
         }
         .task { await profileManager.loadProfile() }
+        .fullScreenCover(item: $selectedPhoto) { url in
+            ZoomableImageView(url: url, location: nil)
+        }
+    }
+}
+
+private struct QuickLinkPill: View {
+    let icon: String
+    let label: String
+
+    var body: some View {
+        VStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.subheadline)
+                .foregroundColor(.ccGold)
+            Text(label)
+                .font(.system(size: 9, weight: .bold))
+                .foregroundColor(.ccSubtext)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 10)
+        .background(LinearGradient.ccCard)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 }

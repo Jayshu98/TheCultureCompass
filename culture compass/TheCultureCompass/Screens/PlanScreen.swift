@@ -41,6 +41,29 @@ struct PlanScreen: View {
                 if let country = selectedCountry {
                     ScrollView {
                         VStack(spacing: 16) {
+                            // In-app features
+                            NavigationLink(destination: SafetyRatingsScreen(country: country)) {
+                                PlanFeatureCard(icon: "shield.checkered", title: "Safety Ratings", subtitle: "Community reviews for \(country.name)")
+                            }
+                            NavigationLink(destination: BusinessDirectoryScreen()) {
+                                PlanFeatureCard(icon: "storefront", title: "Black-Owned Businesses", subtitle: "Find businesses in \(country.name)")
+                            }
+                            NavigationLink(destination: GroupTripsScreen()) {
+                                PlanFeatureCard(icon: "person.3", title: "Group Trips", subtitle: "Join a trip to \(country.name)")
+                            }
+                            NavigationLink(destination: EventsScreen()) {
+                                PlanFeatureCard(icon: "calendar", title: "Events", subtitle: "Meetups & cultural events")
+                            }
+                            NavigationLink(destination: TravelMatchScreen()) {
+                                PlanFeatureCard(icon: "person.2", title: "Travel Match", subtitle: "Find travel buddies")
+                            }
+
+                            // External links
+                            Text("Resources")
+                                .font(.caption.bold())
+                                .foregroundColor(.ccSubtext)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+
                             PlanLinkCard(
                                 icon: "doc.text",
                                 title: "Customs & Entry Info",
@@ -59,9 +82,34 @@ struct PlanScreen: View {
                                 subtitle: "Safety advisories",
                                 urlString: "https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories.html"
                             )
+
+                            // Affiliate links
+                            Text("Travel Essentials")
+                                .font(.caption.bold())
+                                .foregroundColor(.ccSubtext)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+
+                            PlanLinkCard(
+                                icon: "suitcase",
+                                title: "Book Hotels",
+                                subtitle: "Find the best stays",
+                                urlString: "https://www.booking.com"
+                            )
+                            PlanLinkCard(
+                                icon: "airplane",
+                                title: "Book Flights",
+                                subtitle: "Compare flight prices",
+                                urlString: "https://www.skyscanner.com"
+                            )
+                            PlanLinkCard(
+                                icon: "shield",
+                                title: "Travel Insurance",
+                                subtitle: "Protect your trip",
+                                urlString: "https://www.worldnomads.com"
+                            )
                             PlanLinkCard(
                                 icon: "bag",
-                                title: "Travel Essentials",
+                                title: "Travel Gear",
                                 subtitle: "Recommended products",
                                 urlString: "https://www.amazon.com/s?k=travel+essentials"
                             )
@@ -82,6 +130,34 @@ struct PlanScreen: View {
                 }
             }
         }
+    }
+}
+
+private struct PlanFeatureCard: View {
+    let icon: String
+    let title: String
+    let subtitle: String
+
+    var body: some View {
+        HStack(spacing: 14) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundColor(.ccGold)
+                .frame(width: 40)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.subheadline.bold())
+                    .foregroundColor(.ccLightText)
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundColor(.ccSubtext)
+            }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.caption)
+                .foregroundColor(.ccSubtext)
+        }
+        .ccCard()
     }
 }
 

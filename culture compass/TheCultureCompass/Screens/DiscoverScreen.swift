@@ -4,6 +4,7 @@ struct DiscoverScreen: View {
     @StateObject private var postManager = PostDataManager()
     @State private var showCreatePost = false
     @State private var caption = ""
+    @State private var location = ""
     @State private var imageData: Data?
     @State private var showImagePicker = false
 
@@ -61,11 +62,13 @@ struct DiscoverScreen: View {
             if showCreatePost {
                 CaptionPromptView(
                     caption: $caption,
+                    location: $location,
                     isPresented: $showCreatePost,
                     onSubmit: {
                         Task {
-                            await postManager.createPost(caption: caption, imageData: imageData)
+                            await postManager.createPost(caption: caption, imageData: imageData, location: location)
                             caption = ""
+                            location = ""
                             imageData = nil
                         }
                     }

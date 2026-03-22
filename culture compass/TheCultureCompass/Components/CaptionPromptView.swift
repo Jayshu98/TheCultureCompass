@@ -2,6 +2,7 @@ import SwiftUI
 
 struct CaptionPromptView: View {
     @Binding var caption: String
+    @Binding var location: String
     @Binding var isPresented: Bool
     let onSubmit: () -> Void
 
@@ -11,7 +12,7 @@ struct CaptionPromptView: View {
                 .ignoresSafeArea()
                 .onTapGesture { isPresented = false }
 
-            VStack(spacing: 20) {
+            VStack(spacing: 16) {
                 Text("What's on your mind?")
                     .font(.title3.bold())
                     .foregroundColor(.ccGold)
@@ -22,6 +23,16 @@ struct CaptionPromptView: View {
                     .background(Color.ccDarkBg)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .foregroundColor(.ccLightText)
+
+                HStack(spacing: 8) {
+                    Image(systemName: "mappin.circle.fill")
+                        .foregroundColor(.ccGold)
+                    TextField("Add location...", text: $location)
+                        .foregroundColor(.ccLightText)
+                }
+                .padding()
+                .background(Color.ccDarkBg)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
 
                 HStack(spacing: 16) {
                     Button("Cancel") {

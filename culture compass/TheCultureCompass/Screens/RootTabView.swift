@@ -36,29 +36,29 @@ struct RootTabView: View {
             .tag(1)
 
             NavigationStack {
-                PassportScreen()
-            }
-            .tabItem {
-                Image(systemName: "person.crop.rectangle")
-                Text("Passport")
-            }
-            .tag(2)
-
-            NavigationStack {
                 PlanScreen()
             }
             .tabItem {
                 Image(systemName: "map")
                 Text("Plan")
             }
+            .tag(2)
+
+            NavigationStack {
+                GroupMessagesScreen()
+            }
+            .tabItem {
+                Image(systemName: "person.3")
+                Text("Groups")
+            }
             .tag(3)
 
             NavigationStack {
-                SettingsView()
+                PassportScreen()
             }
             .tabItem {
-                Image(systemName: "gearshape")
-                Text("Settings")
+                Image(systemName: "person.crop.rectangle")
+                Text("Passport")
             }
             .tag(4)
         }
