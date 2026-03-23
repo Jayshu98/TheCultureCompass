@@ -8,6 +8,8 @@ struct ChatMessageView: View {
 
     @State private var replyText = ""
     @State private var showReplies = false
+    @State private var showActions = false
+    @State private var showDeleteConfirm = false
 
     private var isOwner: Bool {
         Auth.auth().currentUser?.uid == message.userId
@@ -37,13 +39,6 @@ struct ChatMessageView: View {
                         .foregroundColor(.ccSubtext)
                 }
                 Spacer()
-                if isOwner {
-                    Button(role: .destructive, action: onDelete) {
-                        Image(systemName: "trash")
-                            .font(.caption2)
-                            .foregroundColor(.ccSubtext)
-                    }
-                }
             }
 
             Text(message.message)
@@ -107,7 +102,90 @@ struct ChatMessageView: View {
                 }
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
+
+            // Instagram-style action bar (shows on long press)
+            if showActions {
+                HStack(spacing: 0) {
+                    Button {
+                        withAnimation(.spring(response: 0.3)) {
+                            showReplies = true
+                            showActions = false
+                        }
+                    } label: {
+                        VStack(spacing: 3) {
+                            Image(systemName: "arrowshape.turn.up.left.fill")
+                                .font(.caption)
+                            Text("Reply")
+                                .font(.system(size: 9))
+                        }
+                        .foregroundColor(.ccLightText)
+                        .frame(maxWidth: .infinity)
+                    }
+
+                    if isOwner {
+                        Divider()
+                            .frame(height: 30)
+                            .background(Color.ccSubtext.opacity(0.3))
+
+                        Button {
+                            showActions = false
+                            showDeleteConfirm = true
+                        } label: {
+                            VStack(spacing: 3) {
+                                Image(systemName: "trash.fill")
+                                    .font(.caption)
+                                Text("Delete")
+                                    .font(.system(size: 9))
+                            }
+                            .foregroundColor(.red)
+                            .frame(maxWidth: .infinity)
+                        }
+                    }
+
+                    Divider()
+                        .frame(height: 30)
+                        .background(Color.ccSubtext.opacity(0.3))
+
+                    Button {
+                        UIPasteboard.general.string = message.message
+                        withAnimation { showActions = false }
+                    } label: {
+                        VStack(spacing: 3) {
+                            Image(systemName: "doc.on.doc.fill")
+                                .font(.caption)
+                            Text("Copy")
+                                .font(.system(size: 9))
+                        }
+                        .foregroundColor(.ccLightText)
+                        .frame(maxWidth: .infinity)
+                    }
+                }
+                .padding(.vertical, 8)
+                .background(Color.ccDarkBg)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .transition(.scale.combined(with: .opacity))
+            }
         }
         .ccCard()
+        .onLongPressGesture {
+            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+            impactFeedback.impactOccurred()
+            withAnimation(.spring(response: 0.25)) {
+                showActions.toggle()
+            }
+        }
+        .onTapGesture {
+            if showActions {
+                withAnimation(.spring(response: 0.25)) {
+                    showActions = false
+                }
+            }
+        }
+        .alert("Delete Message?", isPresented: $showDeleteConfirm) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete", role: .destructive) { onDelete() }
+        } message: {
+            Text("This can't be undone.")
+        }
     }
 }

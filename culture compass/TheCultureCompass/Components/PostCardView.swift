@@ -9,6 +9,7 @@ struct PostCardView: View {
     @State private var commentText = ""
     @State private var showComments = false
     @State private var showZoomImage = false
+    @State private var showDeleteConfirm = false
 
     private var isOwner: Bool {
         Auth.auth().currentUser?.uid == post.userId
@@ -52,10 +53,18 @@ struct PostCardView: View {
                 }
                 Spacer()
                 if isOwner {
-                    Button(role: .destructive, action: onDelete) {
-                        Image(systemName: "trash")
-                            .font(.caption)
+                    Menu {
+                        Button(role: .destructive) {
+                            showDeleteConfirm = true
+                        } label: {
+                            Label("Delete Post", systemImage: "trash")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis")
+                            .font(.body)
                             .foregroundColor(.ccSubtext)
+                            .frame(width: 32, height: 32)
+                            .contentShape(Rectangle())
                     }
                 }
             }
@@ -152,6 +161,12 @@ struct PostCardView: View {
             }
         }
         .ccCard()
+        .alert("Delete Post?", isPresented: $showDeleteConfirm) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete", role: .destructive) { onDelete() }
+        } message: {
+            Text("This can't be undone.")
+        }
         .fullScreenCover(isPresented: $showZoomImage) {
             ZoomableImageView(url: post.imageURL, location: post.location)
         }

@@ -126,6 +126,15 @@ final class RoomsDataManager: ObservableObject {
         }
     }
 
+    func deleteGroupMessage(roomId: String, messageId: String) async {
+        do {
+            try await db.collection("rooms").document(roomId)
+                .collection("messages").document(messageId).delete()
+        } catch {
+            errorMessage = "Failed to delete message."
+        }
+    }
+
     func leaveRoom(_ roomId: String) async {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         do {

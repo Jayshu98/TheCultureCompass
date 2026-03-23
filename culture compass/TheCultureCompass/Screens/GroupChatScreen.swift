@@ -37,7 +37,11 @@ struct GroupChatScreen: View {
                                 ForEach(roomsManager.messages) { msg in
                                     GroupBubble(
                                         message: msg,
-                                        isMe: msg.userId == currentUid
+                                        isMe: msg.userId == currentUid,
+                                        onDelete: {
+                                            guard let roomId = room.id else { return }
+                                            Task { await roomsManager.deleteGroupMessage(roomId: roomId, messageId: msg.id) }
+                                        }
                                     )
                                     .id(msg.id)
                                 }
@@ -96,6 +100,10 @@ struct GroupChatScreen: View {
 private struct GroupBubble: View {
     let message: GroupMessage
     let isMe: Bool
+    var onDelete: (() -> Void)? = nil
+
+    @State private var showActions = false
+    @State private var showDeleteConfirm = false
 
     var body: some View {
         HStack {
@@ -114,11 +122,60 @@ private struct GroupBubble: View {
                     .background(isMe ? LinearGradient.ccGoldShimmer : LinearGradient.ccCard)
                     .clipShape(RoundedRectangle(cornerRadius: 16))
 
+                // Action bar
+                if showActions {
+                    HStack(spacing: 16) {
+                        Button {
+                            UIPasteboard.general.string = message.message
+                            withAnimation { showActions = false }
+                        } label: {
+                            Label("Copy", systemImage: "doc.on.doc")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundColor(.ccLightText)
+                        }
+                        if isMe {
+                            Button {
+                                showActions = false
+                                showDeleteConfirm = true
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                                    .font(.system(size: 10, weight: .bold))
+                                    .foregroundColor(.red)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.ccDarkBg)
+                    .clipShape(Capsule())
+                    .transition(.scale.combined(with: .opacity))
+                }
+
                 Text(message.timestamp, style: .time)
                     .font(.system(size: 9))
                     .foregroundColor(.ccSubtext)
             }
             if !isMe { Spacer() }
+        }
+        .onLongPressGesture {
+            let impact = UIImpactFeedbackGenerator(style: .medium)
+            impact.impactOccurred()
+            withAnimation(.spring(response: 0.25)) {
+                showActions.toggle()
+            }
+        }
+        .onTapGesture {
+            if showActions {
+                withAnimation(.spring(response: 0.25)) {
+                    showActions = false
+                }
+            }
+        }
+        .alert("Delete Message?", isPresented: $showDeleteConfirm) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete", role: .destructive) { onDelete?() }
+        } message: {
+            Text("This can't be undone.")
         }
     }
 }
