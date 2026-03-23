@@ -16,19 +16,23 @@ struct ChatMessageView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Circle()
-                    .fill(Color.ccBrown)
-                    .frame(width: 32, height: 32)
-                    .overlay(
-                        Text(String(message.user.prefix(1)).uppercased())
-                            .font(.caption2.bold())
-                            .foregroundColor(.ccGold)
-                    )
+                NavigationLink(destination: UserPassportScreen(userId: message.userId)) {
+                    Circle()
+                        .fill(Color.ccBrown)
+                        .frame(width: 32, height: 32)
+                        .overlay(
+                            Text(String(message.user.prefix(1)).uppercased())
+                                .font(.caption2.bold())
+                                .foregroundColor(.ccGold)
+                        )
+                }
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(message.user)
-                        .font(.caption.bold())
-                        .foregroundColor(.ccGold)
-                    Text(message.timestamp, style: .relative)
+                    NavigationLink(destination: UserPassportScreen(userId: message.userId)) {
+                        Text(message.user)
+                            .font(.caption.bold())
+                            .foregroundColor(.ccGold)
+                    }
+                    Text(message.timestamp, format: .dateTime.month(.abbreviated).day().hour().minute())
                         .font(.caption2)
                         .foregroundColor(.ccSubtext)
                 }
@@ -64,13 +68,20 @@ struct ChatMessageView: View {
             if showReplies {
                 VStack(alignment: .leading, spacing: 6) {
                     ForEach(message.replies) { reply in
-                        HStack(alignment: .top, spacing: 6) {
-                            Text(reply.user)
-                                .font(.caption2.bold())
-                                .foregroundColor(.ccGold)
-                            Text(reply.message)
-                                .font(.caption2)
-                                .foregroundColor(.ccLightText)
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack(alignment: .top, spacing: 6) {
+                                NavigationLink(destination: UserPassportScreen(userId: reply.userId)) {
+                                    Text(reply.user)
+                                        .font(.caption2.bold())
+                                        .foregroundColor(.ccGold)
+                                }
+                                Text(reply.message)
+                                    .font(.caption2)
+                                    .foregroundColor(.ccLightText)
+                            }
+                            Text(Date(timeIntervalSince1970: Double(reply.timestamp)), format: .dateTime.month(.abbreviated).day().hour().minute())
+                                .font(.system(size: 9))
+                                .foregroundColor(.ccSubtext)
                         }
                         .padding(.leading, 8)
                     }

@@ -48,7 +48,8 @@ final class AuthManager: ObservableObject {
                 bio: "",
                 profileImageURL: "",
                 scrapbookPhotos: [],
-                visitedCountries: []
+                visitedCountries: [],
+                friends: []
             )
             try db.collection("users").document(result.user.uid).setData(from: newUser)
             appUser = newUser

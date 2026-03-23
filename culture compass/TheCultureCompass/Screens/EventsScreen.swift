@@ -111,7 +111,7 @@ private struct EventCard: View {
                     .foregroundColor(isAttending ? .red : .black)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 6)
-                    .background(isAttending ? Color.ccCardBg : LinearGradient.ccGoldShimmer.opacity(1))
+                    .background(isAttending ? AnyShapeStyle(Color.ccCardBg) : AnyShapeStyle(LinearGradient.ccGoldShimmer))
                     .clipShape(Capsule())
             }
         }

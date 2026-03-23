@@ -3,10 +3,12 @@ import SwiftUI
 struct GroupMessagesScreen: View {
     @StateObject private var roomsManager = RoomsDataManager()
     @StateObject private var searchManager = UserSearchManager()
+    @StateObject private var profileManager = UserProfileManager()
     @State private var showCreateRoom = false
     @State private var roomName = ""
     @State private var searchQuery = ""
     @State private var selectedUserIds: Set<String> = []
+    @State private var friends: [AppUser] = []
 
     var body: some View {
         ZStack {
@@ -66,52 +68,79 @@ struct GroupMessagesScreen: View {
                         .ignoresSafeArea()
                         .onTapGesture { showCreateRoom = false }
 
-                    VStack(spacing: 16) {
-                        Text("New Group Chat")
-                            .font(.headline)
-                            .foregroundColor(.ccGold)
+                    ScrollView {
+                        VStack(spacing: 16) {
+                            Text("New Group Chat")
+                                .font(.headline)
+                                .foregroundColor(.ccGold)
 
-                        TextField("Group name...", text: $roomName)
-                            .padding()
-                            .background(Color.ccDarkBg)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                            .foregroundColor(.ccLightText)
+                            TextField("Group name...", text: $roomName)
+                                .padding()
+                                .background(Color.ccDarkBg)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                                .foregroundColor(.ccLightText)
 
-                        // User search
-                        TextField("Search users to add...", text: $searchQuery)
-                            .padding()
-                            .background(Color.ccDarkBg)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                            .foregroundColor(.ccLightText)
-                            .onChange(of: searchQuery) { _, newValue in
-                                Task { await searchManager.search(query: newValue) }
-                            }
+                            // Friends section
+                            if !friends.isEmpty {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    HStack(spacing: 6) {
+                                        Image(systemName: "person.2.fill")
+                                            .font(.caption)
+                                            .foregroundColor(.ccGold)
+                                        Text("Your Friends")
+                                            .font(.caption.bold())
+                                            .foregroundColor(.ccGold)
+                                    }
 
-                        if !searchManager.results.isEmpty {
-                            ScrollView {
-                                VStack(spacing: 4) {
-                                    ForEach(searchManager.results) { user in
-                                        HStack {
-                                            Circle()
-                                                .fill(Color.ccBrown)
-                                                .frame(width: 28, height: 28)
-                                                .overlay(
-                                                    Text(String(user.username.prefix(1)).uppercased())
-                                                        .font(.caption2.bold())
-                                                        .foregroundColor(.ccGold)
-                                                )
-                                            Text(user.username)
-                                                .font(.subheadline)
-                                                .foregroundColor(.ccLightText)
-                                            Spacer()
-                                            if let uid = user.id, selectedUserIds.contains(uid) {
-                                                Image(systemName: "checkmark.circle.fill")
-                                                    .foregroundColor(.ccGold)
+                                    ForEach(friends) { friend in
+                                        UserSelectRow(
+                                            user: friend,
+                                            isSelected: friend.id.map { selectedUserIds.contains($0) } ?? false
+                                        ) {
+                                            if let uid = friend.id {
+                                                if selectedUserIds.contains(uid) {
+                                                    selectedUserIds.remove(uid)
+                                                } else {
+                                                    selectedUserIds.insert(uid)
+                                                }
                                             }
                                         }
-                                        .padding(.vertical, 6)
-                                        .contentShape(Rectangle())
-                                        .onTapGesture {
+                                    }
+                                }
+                                .padding()
+                                .background(Color.ccCardBg.opacity(0.5))
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                            }
+
+                            // Search for other users
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "magnifyingglass")
+                                        .font(.caption)
+                                        .foregroundColor(.ccSubtext)
+                                    Text("Search All Users")
+                                        .font(.caption.bold())
+                                        .foregroundColor(.ccSubtext)
+                                }
+
+                                TextField("Search by username...", text: $searchQuery)
+                                    .padding()
+                                    .background(Color.ccDarkBg)
+                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                                    .foregroundColor(.ccLightText)
+                                    .onChange(of: searchQuery) { _, newValue in
+                                        Task { await searchManager.search(query: newValue) }
+                                    }
+
+                                if !searchManager.results.isEmpty {
+                                    let filtered = searchManager.results.filter { user in
+                                        !friends.contains(where: { $0.id == user.id })
+                                    }
+                                    ForEach(filtered) { user in
+                                        UserSelectRow(
+                                            user: user,
+                                            isSelected: user.id.map { selectedUserIds.contains($0) } ?? false
+                                        ) {
                                             if let uid = user.id {
                                                 if selectedUserIds.contains(uid) {
                                                     selectedUserIds.remove(uid)
@@ -123,47 +152,101 @@ struct GroupMessagesScreen: View {
                                     }
                                 }
                             }
-                            .frame(maxHeight: 150)
-                        }
 
-                        if !selectedUserIds.isEmpty {
-                            Text("\(selectedUserIds.count) user(s) selected")
-                                .font(.caption)
-                                .foregroundColor(.ccSubtext)
-                        }
+                            if !selectedUserIds.isEmpty {
+                                Text("\(selectedUserIds.count) user(s) selected")
+                                    .font(.caption)
+                                    .foregroundColor(.ccGold)
+                            }
 
-                        HStack {
-                            Button("Cancel") { showCreateRoom = false }
-                                .foregroundColor(.ccSubtext)
-                            Spacer()
-                            Button("Create") {
-                                Task {
-                                    await roomsManager.createRoom(
-                                        name: roomName,
-                                        participantIds: Array(selectedUserIds)
-                                    )
-                                    roomName = ""
+                            HStack {
+                                Button("Cancel") {
+                                    showCreateRoom = false
                                     searchQuery = ""
                                     selectedUserIds = []
-                                    showCreateRoom = false
                                 }
+                                .foregroundColor(.ccSubtext)
+                                Spacer()
+                                Button("Create") {
+                                    Task {
+                                        await roomsManager.createRoom(
+                                            name: roomName,
+                                            participantIds: Array(selectedUserIds)
+                                        )
+                                        roomName = ""
+                                        searchQuery = ""
+                                        selectedUserIds = []
+                                        showCreateRoom = false
+                                    }
+                                }
+                                .buttonStyle(CCButtonStyle())
+                                .disabled(roomName.trimmingCharacters(in: .whitespaces).isEmpty)
                             }
-                            .buttonStyle(CCButtonStyle())
-                            .disabled(roomName.trimmingCharacters(in: .whitespaces).isEmpty)
                         }
+                        .padding(24)
+                        .background(LinearGradient.ccCard)
+                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                        .shadow(color: .black.opacity(0.6), radius: 20)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 60)
                     }
-                    .padding(24)
-                    .background(LinearGradient.ccCard)
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
-                    .shadow(color: .black.opacity(0.6), radius: 20)
-                    .padding(.horizontal, 20)
                 }
                 .transition(.opacity)
             }
         }
         .animation(.easeInOut, value: showCreateRoom)
-        .onAppear { roomsManager.startListeningRooms() }
+        .onAppear {
+            roomsManager.startListeningRooms()
+            Task {
+                await profileManager.loadProfile()
+                friends = await profileManager.loadFriends()
+            }
+        }
         .onDisappear { roomsManager.stopListeningRooms() }
+    }
+}
+
+// MARK: - Components
+
+private struct UserSelectRow: View {
+    let user: AppUser
+    let isSelected: Bool
+    let onTap: () -> Void
+
+    var body: some View {
+        HStack(spacing: 10) {
+            if !user.profileImageURL.isEmpty {
+                AsyncImage(url: URL(string: user.profileImageURL)) { image in
+                    image.resizable().aspectRatio(contentMode: .fill)
+                } placeholder: {
+                    Circle().fill(Color.ccBrown)
+                }
+                .frame(width: 32, height: 32)
+                .clipShape(Circle())
+            } else {
+                Circle()
+                    .fill(Color.ccBrown)
+                    .frame(width: 32, height: 32)
+                    .overlay(
+                        Text(String(user.username.prefix(1)).uppercased())
+                            .font(.caption2.bold())
+                            .foregroundColor(.ccGold)
+                    )
+            }
+
+            Text(user.username)
+                .font(.subheadline)
+                .foregroundColor(.ccLightText)
+
+            Spacer()
+
+            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                .foregroundColor(isSelected ? .ccGold : .ccSubtext)
+                .font(.title3)
+        }
+        .padding(.vertical, 6)
+        .contentShape(Rectangle())
+        .onTapGesture(perform: onTap)
     }
 }
 

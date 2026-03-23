@@ -99,4 +99,57 @@ final class UserProfileManager: ObservableObject {
             errorMessage = "Failed to add country."
         }
     }
+
+    // MARK: - Friends
+
+    func addFriend(_ friendId: String) async {
+        guard let uid else { return }
+        do {
+            // Add to both users' friend lists
+            try await db.collection("users").document(uid).updateData([
+                "friends": FieldValue.arrayUnion([friendId])
+            ])
+            try await db.collection("users").document(friendId).updateData([
+                "friends": FieldValue.arrayUnion([uid])
+            ])
+            if !user.friends.contains(friendId) {
+                user.friends.append(friendId)
+            }
+        } catch {
+            errorMessage = "Failed to add friend."
+        }
+    }
+
+    func removeFriend(_ friendId: String) async {
+        guard let uid else { return }
+        do {
+            try await db.collection("users").document(uid).updateData([
+                "friends": FieldValue.arrayRemove([friendId])
+            ])
+            try await db.collection("users").document(friendId).updateData([
+                "friends": FieldValue.arrayRemove([uid])
+            ])
+            user.friends.removeAll { $0 == friendId }
+        } catch {
+            errorMessage = "Failed to remove friend."
+        }
+    }
+
+    func isFriend(_ userId: String) -> Bool {
+        user.friends.contains(userId)
+    }
+
+    func loadFriends() async -> [AppUser] {
+        guard !user.friends.isEmpty else { return [] }
+        var friends: [AppUser] = []
+        for friendId in user.friends {
+            do {
+                let doc = try await db.collection("users").document(friendId).getDocument()
+                if let friend = try? doc.data(as: AppUser.self) {
+                    friends.append(friend)
+                }
+            } catch {}
+        }
+        return friends
+    }
 }
