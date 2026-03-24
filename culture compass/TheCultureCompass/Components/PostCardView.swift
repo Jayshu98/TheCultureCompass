@@ -9,6 +9,7 @@ struct PostCardView: View {
     @State private var commentText = ""
     @State private var showComments = false
     @State private var showDeleteConfirm = false
+    @State private var navigateToUser: String?
 
     private var isOwner: Bool {
         Auth.auth().currentUser?.uid == post.userId
@@ -16,9 +17,11 @@ struct PostCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Header — clickable profile pic
+            // Header
             HStack {
-                NavigationLink(destination: UserPassportScreen(userId: post.userId)) {
+                Button {
+                    navigateToUser = post.userId
+                } label: {
                     Circle()
                         .fill(Color.ccBrown)
                         .frame(width: 36, height: 36)
@@ -30,7 +33,9 @@ struct PostCardView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
-                    NavigationLink(destination: UserPassportScreen(userId: post.userId)) {
+                    Button {
+                        navigateToUser = post.userId
+                    } label: {
                         Text(post.user)
                             .font(.subheadline.bold())
                             .foregroundColor(.ccLightText)
@@ -52,16 +57,19 @@ struct PostCardView: View {
                 }
                 Spacer()
                 if isOwner {
-                    Button {
-                        showDeleteConfirm = true
+                    Menu {
+                        Button(role: .destructive) {
+                            showDeleteConfirm = true
+                        } label: {
+                            Label("Delete Post", systemImage: "trash")
+                        }
                     } label: {
                         Image(systemName: "ellipsis")
                             .font(.body.bold())
                             .foregroundColor(.ccSubtext)
-                            .padding(10)
-                            .background(Color.ccDarkBg.opacity(0.01))
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
                     }
-                    .buttonStyle(.plain)
                 }
             }
 
@@ -72,7 +80,7 @@ struct PostCardView: View {
                     .foregroundColor(.ccLightText)
             }
 
-            // Image — tappable to zoom
+            // Image
             if !post.imageURL.isEmpty {
                 AsyncImage(url: URL(string: post.imageURL)) { phase in
                     switch phase {
@@ -113,13 +121,15 @@ struct PostCardView: View {
                 Spacer()
             }
 
-            // Comments with timestamps
+            // Comments
             if showComments {
                 VStack(alignment: .leading, spacing: 8) {
                     ForEach(post.comments) { comment in
                         VStack(alignment: .leading, spacing: 2) {
                             HStack(alignment: .top, spacing: 8) {
-                                NavigationLink(destination: UserPassportScreen(userId: comment.userId)) {
+                                Button {
+                                    navigateToUser = comment.userId
+                                } label: {
                                     Text(comment.user)
                                         .font(.caption.bold())
                                         .foregroundColor(.ccGold)
@@ -156,6 +166,15 @@ struct PostCardView: View {
             }
         }
         .ccCard()
+        .background(
+            NavigationLink(destination: UserPassportScreen(userId: navigateToUser ?? ""), isActive: Binding(
+                get: { navigateToUser != nil },
+                set: { if !$0 { navigateToUser = nil } }
+            )) {
+                EmptyView()
+            }
+            .hidden()
+        )
         .alert("Delete Post?", isPresented: $showDeleteConfirm) {
             Button("Cancel", role: .cancel) {}
             Button("Delete", role: .destructive) { onDelete() }
