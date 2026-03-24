@@ -82,6 +82,14 @@ struct ChatFeedScreen: View {
         .navigationTitle("\(country.flag) \(country.name)")
         .navigationBarTitleDisplayMode(.inline)
         .toolbarColorScheme(.dark, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationLink(destination: SafetyRatingsScreen(country: country)) {
+                    Image(systemName: "shield.fill")
+                        .foregroundColor(.ccGold)
+                }
+            }
+        }
         .onAppear { chatManager.startListening(for: country.name) }
         .onDisappear { chatManager.stopListening() }
     }

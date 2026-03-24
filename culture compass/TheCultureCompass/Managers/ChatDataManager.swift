@@ -50,6 +50,7 @@ final class ChatDataManager: ObservableObject {
                 userId: user.uid,
                 message: text,
                 timestamp: Date(),
+                expiresAt: Date().addingTimeInterval(14 * 24 * 60 * 60),
                 replies: []
             )
             try db.collection("chats").addDocument(from: msg)

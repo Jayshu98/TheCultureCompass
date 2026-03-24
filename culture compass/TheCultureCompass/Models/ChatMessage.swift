@@ -22,6 +22,7 @@ struct ChatMessage: Identifiable, Codable, Equatable {
     var userId: String
     var message: String
     var timestamp: Date
+    var expiresAt: Date
     var replies: [ChatReply]
 
     static func == (lhs: ChatMessage, rhs: ChatMessage) -> Bool {
