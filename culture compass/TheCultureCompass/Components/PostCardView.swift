@@ -8,7 +8,6 @@ struct PostCardView: View {
 
     @State private var commentText = ""
     @State private var showComments = false
-    @State private var showZoomImage = false
     @State private var showDeleteConfirm = false
 
     private var isOwner: Bool {
@@ -83,7 +82,6 @@ struct PostCardView: View {
                             .aspectRatio(contentMode: .fill)
                             .frame(maxHeight: 300)
                             .clipShape(RoundedRectangle(cornerRadius: 12))
-                            .onTapGesture { showZoomImage = true }
                     case .failure:
                         RoundedRectangle(cornerRadius: 12)
                             .fill(Color.ccCardBg)
@@ -163,9 +161,6 @@ struct PostCardView: View {
             Button("Delete", role: .destructive) { onDelete() }
         } message: {
             Text("This can't be undone.")
-        }
-        .fullScreenCover(isPresented: $showZoomImage) {
-            ZoomableImageView(url: post.imageURL, location: post.location)
         }
     }
 }
