@@ -45,22 +45,13 @@ struct RootTabView: View {
             .tag(2)
 
             NavigationStack {
-                GroupMessagesScreen()
-            }
-            .tabItem {
-                Image(systemName: "person.3")
-                Text("Groups")
-            }
-            .tag(3)
-
-            NavigationStack {
                 PassportScreen()
             }
             .tabItem {
                 Image(systemName: "person.crop.rectangle")
                 Text("Passport")
             }
-            .tag(4)
+            .tag(3)
         }
     }
 }

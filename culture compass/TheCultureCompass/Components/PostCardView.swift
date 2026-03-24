@@ -53,19 +53,16 @@ struct PostCardView: View {
                 }
                 Spacer()
                 if isOwner {
-                    Menu {
-                        Button(role: .destructive) {
-                            showDeleteConfirm = true
-                        } label: {
-                            Label("Delete Post", systemImage: "trash")
-                        }
+                    Button {
+                        showDeleteConfirm = true
                     } label: {
                         Image(systemName: "ellipsis")
-                            .font(.body)
+                            .font(.body.bold())
                             .foregroundColor(.ccSubtext)
-                            .frame(width: 32, height: 32)
-                            .contentShape(Rectangle())
+                            .padding(10)
+                            .background(Color.ccDarkBg.opacity(0.01))
                     }
+                    .buttonStyle(.plain)
                 }
             }
 
