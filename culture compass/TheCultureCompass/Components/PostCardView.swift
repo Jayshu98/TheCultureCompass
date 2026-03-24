@@ -9,7 +9,7 @@ struct PostCardView: View {
     @State private var commentText = ""
     @State private var showComments = false
     @State private var showDeleteConfirm = false
-    @State private var navigateToUser: String?
+    @State private var profileNavUserId: String?
 
     private var isOwner: Bool {
         Auth.auth().currentUser?.uid == post.userId
@@ -20,42 +20,41 @@ struct PostCardView: View {
             // Header
             HStack {
                 Button {
-                    navigateToUser = post.userId
+                    profileNavUserId = post.userId
                 } label: {
-                    Circle()
-                        .fill(Color.ccBrown)
-                        .frame(width: 36, height: 36)
-                        .overlay(
-                            Text(String(post.user.prefix(1)).uppercased())
-                                .font(.caption.bold())
-                                .foregroundColor(.ccGold)
-                        )
-                }
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Button {
-                        navigateToUser = post.userId
-                    } label: {
-                        Text(post.user)
-                            .font(.subheadline.bold())
-                            .foregroundColor(.ccLightText)
-                    }
-                    HStack(spacing: 6) {
-                        Text(post.timestamp, format: .dateTime.month(.abbreviated).day().hour().minute())
-                            .font(.caption2)
-                            .foregroundColor(.ccSubtext)
-                        if !post.location.isEmpty {
-                            HStack(spacing: 2) {
-                                Image(systemName: "mappin")
-                                    .font(.system(size: 8))
-                                Text(post.location)
+                    HStack(spacing: 8) {
+                        Circle()
+                            .fill(Color.ccBrown)
+                            .frame(width: 36, height: 36)
+                            .overlay(
+                                Text(String(post.user.prefix(1)).uppercased())
+                                    .font(.caption.bold())
+                                    .foregroundColor(.ccGold)
+                            )
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(post.user)
+                                .font(.subheadline.bold())
+                                .foregroundColor(.ccLightText)
+                            HStack(spacing: 6) {
+                                Text(post.timestamp, format: .dateTime.month(.abbreviated).day().hour().minute())
                                     .font(.caption2)
+                                    .foregroundColor(.ccSubtext)
+                                if !post.location.isEmpty {
+                                    HStack(spacing: 2) {
+                                        Image(systemName: "mappin")
+                                            .font(.system(size: 8))
+                                        Text(post.location)
+                                            .font(.caption2)
+                                    }
+                                    .foregroundColor(.ccGold)
+                                }
                             }
-                            .foregroundColor(.ccGold)
                         }
                     }
                 }
+
                 Spacer()
+
                 if isOwner {
                     Menu {
                         Button(role: .destructive) {
@@ -128,7 +127,7 @@ struct PostCardView: View {
                         VStack(alignment: .leading, spacing: 2) {
                             HStack(alignment: .top, spacing: 8) {
                                 Button {
-                                    navigateToUser = comment.userId
+                                    profileNavUserId = comment.userId
                                 } label: {
                                     Text(comment.user)
                                         .font(.caption.bold())
@@ -166,15 +165,9 @@ struct PostCardView: View {
             }
         }
         .ccCard()
-        .background(
-            NavigationLink(destination: UserPassportScreen(userId: navigateToUser ?? ""), isActive: Binding(
-                get: { navigateToUser != nil },
-                set: { if !$0 { navigateToUser = nil } }
-            )) {
-                EmptyView()
-            }
-            .hidden()
-        )
+        .navigationDestination(item: $profileNavUserId) { userId in
+            UserPassportScreen(userId: userId)
+        }
         .alert("Delete Post?", isPresented: $showDeleteConfirm) {
             Button("Cancel", role: .cancel) {}
             Button("Delete", role: .destructive) { onDelete() }

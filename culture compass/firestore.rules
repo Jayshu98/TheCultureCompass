@@ -1,0 +1,103 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── Helper ───
+    function isAuth() {
+      return request.auth != null;
+    }
+    function isOwner(uid) {
+      return isAuth() && request.auth.uid == uid;
+    }
+
+    // ─── Users ───
+    match /users/{userId} {
+      allow read: if isAuth();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId)
+        // also allow other users to update friends array (add/remove friend)
+        || (isAuth() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['friends']));
+      allow delete: if isOwner(userId);
+    }
+
+    // ─── Posts ───
+    match /posts/{postId} {
+      allow read: if isAuth();
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      // allow owner to delete, allow any auth user to add comments
+      allow update: if isAuth();
+      allow delete: if isAuth() && resource.data.userId == request.auth.uid;
+    }
+
+    // ─── Chats (country chat rooms) ───
+    match /chats/{chatId} {
+      allow read: if isAuth();
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      // allow replies from any auth user
+      allow update: if isAuth();
+      allow delete: if isAuth() && resource.data.userId == request.auth.uid;
+    }
+
+    // ─── Conversations (DMs) ───
+    match /conversations/{convoId} {
+      allow read: if isAuth() && request.auth.uid in resource.data.participants;
+      allow create: if isAuth() && request.auth.uid in request.resource.data.participants;
+      allow update: if isAuth() && request.auth.uid in resource.data.participants;
+      allow delete: if false;
+
+      match /messages/{msgId} {
+        allow read: if isAuth();
+        allow create: if isAuth() && request.resource.data.senderId == request.auth.uid;
+        allow update, delete: if false;
+      }
+    }
+
+    // ─── Safety Ratings ───
+    match /safety_ratings/{ratingId} {
+      allow read: if isAuth();
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuth() && resource.data.userId == request.auth.uid;
+    }
+
+    // ─── Businesses ───
+    match /businesses/{bizId} {
+      allow read: if isAuth();
+      allow create: if isAuth();
+      // allow reviews from any auth user
+      allow update: if isAuth();
+      allow delete: if isAuth() && resource.data.ownerId == request.auth.uid;
+    }
+
+    // ─── Itineraries ───
+    match /itineraries/{itinId} {
+      allow read: if isAuth();
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuth() && resource.data.userId == request.auth.uid;
+    }
+
+    // ─── Group Trips ───
+    match /group_trips/{tripId} {
+      allow read: if isAuth();
+      allow create: if isAuth() && request.auth.uid in request.resource.data.participants;
+      allow update: if isAuth() && request.auth.uid in resource.data.participants;
+      allow delete: if isAuth() && resource.data.organizerId == request.auth.uid;
+    }
+
+    // ─── Events ───
+    match /events/{eventId} {
+      allow read: if isAuth();
+      allow create: if isAuth() && request.resource.data.organizerId == request.auth.uid;
+      // allow any auth user to join (update attendees)
+      allow update: if isAuth();
+      allow delete: if isAuth() && resource.data.organizerId == request.auth.uid;
+    }
+
+    // ─── Travel Matches ───
+    match /travel_matches/{matchId} {
+      allow read: if isAuth();
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuth() && resource.data.userId == request.auth.uid;
+    }
+  }
+}
