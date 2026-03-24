@@ -45,13 +45,22 @@ struct RootTabView: View {
             .tag(2)
 
             NavigationStack {
+                InboxScreen()
+            }
+            .tabItem {
+                Image(systemName: "envelope")
+                Text("Inbox")
+            }
+            .tag(3)
+
+            NavigationStack {
                 PassportScreen()
             }
             .tabItem {
                 Image(systemName: "person.crop.rectangle")
                 Text("Passport")
             }
-            .tag(3)
+            .tag(4)
         }
     }
 }

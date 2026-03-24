@@ -9,8 +9,11 @@ struct UserPassportScreen: View {
     @State private var selectedPhoto: String?
     @State private var isFriend = false
     @State private var friendActionLoading = false
+    @State private var dmConversationId: String?
+    @State private var navigateToDM = false
 
     private let db = Firestore.firestore()
+    private let dmManager = DirectMessageManager()
     private let passportBrown = Color(red: 0.35, green: 0.18, blue: 0.08)
     private let passportGold = Color(red: 0.82, green: 0.68, blue: 0.21)
     private let pageColor = Color(red: 0.95, green: 0.92, blue: 0.86)
@@ -182,6 +185,38 @@ struct UserPassportScreen: View {
                                 .padding(.horizontal, 16)
                                 .padding(.bottom, 12)
                                 .disabled(friendActionLoading)
+
+                                // Message button
+                                NavigationLink(destination: DMChatScreen(conversationId: dmConversationId ?? "", otherName: user?.username ?? ""), isActive: $navigateToDM) {
+                                    EmptyView()
+                                }
+                                .hidden()
+
+                                Button {
+                                    Task {
+                                        dmConversationId = await dmManager.findOrCreateConversation(with: userId)
+                                        if dmConversationId != nil {
+                                            navigateToDM = true
+                                        }
+                                    }
+                                } label: {
+                                    HStack(spacing: 6) {
+                                        Image(systemName: "envelope.fill")
+                                        Text("Message")
+                                    }
+                                    .font(.system(size: 11, weight: .bold, design: .serif))
+                                    .foregroundColor(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 10)
+                                    .background(passportGold.opacity(0.8))
+                                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .stroke(passportGold.opacity(0.3), lineWidth: 0.5)
+                                    )
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.bottom, 12)
                             }
 
                             // MRZ
