@@ -48,9 +48,6 @@ struct PlanScreen: View {
                             NavigationLink(destination: BusinessDirectoryScreen()) {
                                 PlanFeatureCard(icon: "storefront", title: "Black-Owned Businesses", subtitle: "Find businesses in \(country.name)")
                             }
-                            NavigationLink(destination: GroupTripsScreen()) {
-                                PlanFeatureCard(icon: "person.3", title: "Group Trips", subtitle: "Join a trip to \(country.name)")
-                            }
                             NavigationLink(destination: EventsScreen()) {
                                 PlanFeatureCard(icon: "calendar", title: "Events", subtitle: "Meetups & cultural events")
                             }
