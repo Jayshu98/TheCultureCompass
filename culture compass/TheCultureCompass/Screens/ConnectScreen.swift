@@ -72,6 +72,7 @@ struct ConnectScreen: View {
                     }
                     .padding(.vertical)
                 }
+                .refreshable { await loadMessageCounts() }
             }
         }
         .task { await loadMessageCounts() }

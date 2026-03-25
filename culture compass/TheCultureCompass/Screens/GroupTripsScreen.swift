@@ -64,6 +64,10 @@ struct GroupTripsScreen: View {
                         }
                         .padding()
                     }
+                    .refreshable {
+                        await manager.loadFeatured()
+                        await manager.loadTrips()
+                    }
                 }
             }
         }

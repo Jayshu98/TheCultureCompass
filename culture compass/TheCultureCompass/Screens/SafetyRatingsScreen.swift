@@ -52,6 +52,7 @@ struct SafetyRatingsScreen: View {
                 }
                 .padding(.vertical)
             }
+            .refreshable { await manager.loadRatings(for: country.name) }
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbarColorScheme(.dark, for: .navigationBar)

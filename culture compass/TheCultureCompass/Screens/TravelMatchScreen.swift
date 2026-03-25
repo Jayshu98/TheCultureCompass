@@ -96,6 +96,10 @@ struct TravelMatchScreen: View {
                         }
                         .padding()
                     }
+                    .refreshable {
+                        guard let country = selectedCountry else { return }
+                        await manager.loadMatches(country: country.name, startDate: startDate, endDate: endDate)
+                    }
                 }
             }
         }

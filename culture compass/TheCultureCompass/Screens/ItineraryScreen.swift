@@ -65,6 +65,10 @@ struct ItineraryScreen: View {
                             }
                             .padding()
                         }
+                        .refreshable {
+                            await manager.loadPublicItineraries()
+                            await manager.loadMyItineraries()
+                        }
                     }
                 }
             }

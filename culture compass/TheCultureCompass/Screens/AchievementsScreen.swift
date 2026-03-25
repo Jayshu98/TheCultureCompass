@@ -34,6 +34,7 @@ struct AchievementsScreen: View {
                 }
                 .padding(.vertical)
             }
+            .refreshable { await loadStats() }
         }
         .task { await loadStats() }
     }

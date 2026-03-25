@@ -58,6 +58,10 @@ struct InboxScreen: View {
                             }
                         }
                     }
+                    .refreshable {
+                        dmManager.stopListeningConversations()
+                        dmManager.startListeningConversations()
+                    }
                 }
             }
         }

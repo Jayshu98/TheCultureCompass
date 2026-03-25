@@ -56,6 +56,7 @@ struct EventsScreen: View {
                         }
                         .padding()
                     }
+                    .refreshable { await manager.loadEvents() }
                 }
             }
         }

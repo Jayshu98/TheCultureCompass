@@ -97,6 +97,10 @@ struct BusinessDirectoryScreen: View {
                         }
                         .padding()
                     }
+                    .refreshable {
+                        await manager.loadFeatured()
+                        await reload()
+                    }
                 }
             }
         }
