@@ -17,14 +17,14 @@ final class GroupTripManager: ObservableObject {
         isLoading = true
         do {
             var query: Query = db.collection("group_trips")
-                .whereField("startDate", isGreaterThan: Date())
+                .order(by: "startDate", descending: false)
+                .limit(to: 30)
             if let country { query = query.whereField("country", isEqualTo: country) }
-            query = query.order(by: "startDate").limit(to: 30)
 
             let snapshot = try await query.getDocuments()
             trips = snapshot.documents.compactMap { try? $0.data(as: GroupTrip.self) }
         } catch {
-            errorMessage = "Failed to load trips."
+            errorMessage = "Failed to load trips: \(error.localizedDescription)"
         }
         isLoading = false
     }
@@ -33,7 +33,6 @@ final class GroupTripManager: ObservableObject {
         do {
             let snapshot = try await db.collection("group_trips")
                 .whereField("isFeatured", isEqualTo: true)
-                .whereField("startDate", isGreaterThan: Date())
                 .limit(to: 5)
                 .getDocuments()
             featuredTrips = snapshot.documents.compactMap { try? $0.data(as: GroupTrip.self) }

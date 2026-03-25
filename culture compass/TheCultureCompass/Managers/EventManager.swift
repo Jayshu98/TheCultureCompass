@@ -14,14 +14,14 @@ final class EventManager: ObservableObject {
         isLoading = true
         do {
             var query: Query = db.collection("events")
-                .whereField("date", isGreaterThan: Date())
+                .order(by: "date", descending: false)
+                .limit(to: 30)
             if let country { query = query.whereField("country", isEqualTo: country) }
-            query = query.order(by: "date").limit(to: 30)
 
             let snapshot = try await query.getDocuments()
             events = snapshot.documents.compactMap { try? $0.data(as: CCEvent.self) }
         } catch {
-            errorMessage = "Failed to load events."
+            errorMessage = "Failed to load events: \(error.localizedDescription)"
         }
         isLoading = false
     }

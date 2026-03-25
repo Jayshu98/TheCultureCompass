@@ -52,7 +52,14 @@ struct ItineraryScreen: View {
                             LazyVStack(spacing: 12) {
                                 ForEach(items) { itinerary in
                                     NavigationLink(destination: ItineraryDetailScreen(itinerary: itinerary)) {
-                                        ItineraryCard(itinerary: itinerary)
+                                        ItineraryCard(
+                                            itinerary: itinerary,
+                                            showDelete: showMine,
+                                            onDelete: {
+                                                guard let id = itinerary.id else { return }
+                                                Task { await manager.deleteItinerary(id) }
+                                            }
+                                        )
                                     }
                                 }
                             }
@@ -79,6 +86,9 @@ struct ItineraryScreen: View {
 
 private struct ItineraryCard: View {
     let itinerary: TripItinerary
+    var showDelete: Bool = false
+    var onDelete: (() -> Void)? = nil
+    @State private var showDeleteConfirm = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -97,6 +107,19 @@ private struct ItineraryCard: View {
                         .foregroundColor(.ccSubtext)
                 }
                 Spacer()
+                if showDelete {
+                    Button {
+                        showDeleteConfirm = true
+                    } label: {
+                        Image(systemName: "trash")
+                            .font(.caption)
+                            .foregroundColor(.red.opacity(0.8))
+                            .frame(width: 32, height: 32)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .highPriorityGesture(TapGesture().onEnded { showDeleteConfirm = true })
+                }
                 VStack(spacing: 2) {
                     HStack(spacing: 4) {
                         Image(systemName: "heart.fill")
@@ -113,6 +136,12 @@ private struct ItineraryCard: View {
                 .foregroundColor(.ccSubtext)
         }
         .ccCard()
+        .alert("Delete Itinerary?", isPresented: $showDeleteConfirm) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete", role: .destructive) { onDelete?() }
+        } message: {
+            Text("This can't be undone.")
+        }
     }
 }
 
