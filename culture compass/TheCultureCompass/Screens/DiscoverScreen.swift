@@ -27,10 +27,11 @@ struct DiscoverScreen: View {
                             .foregroundColor(.ccSubtext)
                     }
                     Spacer()
-                    // Subtle gold compass icon
-                    Image(systemName: "safari")
-                        .font(.system(size: 22))
-                        .foregroundStyle(LinearGradient.ccGoldShimmer)
+                    Button { showImagePicker = true } label: {
+                        Image(systemName: "plus.app")
+                            .font(.system(size: 24))
+                            .foregroundStyle(LinearGradient.ccGoldShimmer)
+                    }
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 12)
