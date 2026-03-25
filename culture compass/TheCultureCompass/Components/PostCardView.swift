@@ -16,39 +16,38 @@ struct PostCardView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            // Header
-            HStack {
+        VStack(alignment: .leading, spacing: 0) {
+            // ── Header ──
+            HStack(spacing: 10) {
                 Button {
                     profileNavUserId = post.userId
                 } label: {
-                    HStack(spacing: 8) {
+                    ZStack {
                         Circle()
-                            .fill(Color.ccBrown)
-                            .frame(width: 36, height: 36)
+                            .strokeBorder(LinearGradient.ccGoldShimmer, lineWidth: 2)
+                            .frame(width: 38, height: 38)
+                        Circle()
+                            .fill(Color.ccCardBg)
+                            .frame(width: 32, height: 32)
                             .overlay(
                                 Text(String(post.user.prefix(1)).uppercased())
-                                    .font(.caption.bold())
+                                    .font(.system(size: 13, weight: .bold))
                                     .foregroundColor(.ccGold)
                             )
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(post.user)
-                                .font(.subheadline.bold())
-                                .foregroundColor(.ccLightText)
-                            HStack(spacing: 6) {
-                                Text(post.timestamp, format: .dateTime.month(.abbreviated).day().hour().minute())
-                                    .font(.caption2)
-                                    .foregroundColor(.ccSubtext)
-                                if !post.location.isEmpty {
-                                    HStack(spacing: 2) {
-                                        Image(systemName: "mappin")
-                                            .font(.system(size: 8))
-                                        Text(post.location)
-                                            .font(.caption2)
-                                    }
-                                    .foregroundColor(.ccGold)
-                                }
-                            }
+                    }
+                }
+
+                Button {
+                    profileNavUserId = post.userId
+                } label: {
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(post.user)
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.ccLightText)
+                        if !post.location.isEmpty {
+                            Text(post.location)
+                                .font(.system(size: 11))
+                                .foregroundColor(.ccSubtext)
                         }
                     }
                 }
@@ -64,22 +63,17 @@ struct PostCardView: View {
                         }
                     } label: {
                         Image(systemName: "ellipsis")
-                            .font(.body.bold())
-                            .foregroundColor(.ccSubtext)
+                            .font(.body)
+                            .foregroundColor(.ccLightText)
                             .frame(width: 44, height: 44)
                             .contentShape(Rectangle())
                     }
                 }
             }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
 
-            // Caption
-            if !post.caption.isEmpty {
-                Text(post.caption)
-                    .font(.body)
-                    .foregroundColor(.ccLightText)
-            }
-
-            // Image
+            // ── Image (edge-to-edge) ──
             if !post.imageURL.isEmpty {
                 AsyncImage(url: URL(string: post.imageURL)) { phase in
                     switch phase {
@@ -87,65 +81,74 @@ struct PostCardView: View {
                         image
                             .resizable()
                             .aspectRatio(contentMode: .fill)
-                            .frame(maxHeight: 300)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .frame(maxWidth: .infinity)
+                            .frame(minHeight: 300, maxHeight: 450)
+                            .clipped()
                     case .failure:
-                        RoundedRectangle(cornerRadius: 12)
+                        Rectangle()
                             .fill(Color.ccCardBg)
-                            .frame(height: 200)
-                            .overlay(Image(systemName: "photo").foregroundColor(.ccSubtext))
+                            .frame(height: 300)
+                            .overlay(Image(systemName: "photo").font(.title).foregroundColor(.ccSubtext))
                     default:
-                        RoundedRectangle(cornerRadius: 12)
+                        Rectangle()
                             .fill(Color.ccCardBg)
-                            .frame(height: 200)
+                            .frame(height: 300)
                             .overlay(ProgressView().tint(.ccGold))
                     }
                 }
             }
 
-            // Actions
+            // ── Action buttons ──
             HStack(spacing: 16) {
                 Button {
-                    withAnimation(.spring(response: 0.3)) {
-                        showComments.toggle()
-                    }
+                    withAnimation(.spring(response: 0.3)) { showComments.toggle() }
                 } label: {
                     HStack(spacing: 4) {
                         Image(systemName: "bubble.right")
-                        Text("\(post.comments.count)")
+                            .font(.system(size: 20))
+                        if post.comments.count > 0 {
+                            Text("\(post.comments.count)")
+                                .font(.system(size: 13))
+                        }
                     }
-                    .font(.caption)
-                    .foregroundColor(.ccSubtext)
+                    .foregroundColor(.ccLightText)
                 }
                 Spacer()
             }
+            .padding(.horizontal, 14)
+            .padding(.top, 10)
+            .padding(.bottom, 6)
 
-            // Comments
+            // ── Caption ──
+            if !post.caption.isEmpty {
+                (Text(post.user).font(.system(size: 13, weight: .semibold)).foregroundColor(.ccLightText)
+                + Text(" ")
+                + Text(post.caption).font(.system(size: 13)).foregroundColor(.ccLightText.opacity(0.9)))
+                    .padding(.horizontal, 14)
+                    .padding(.bottom, 4)
+            }
+
+            // ── Comments ──
             if showComments {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 6) {
                     ForEach(post.comments) { comment in
-                        VStack(alignment: .leading, spacing: 2) {
-                            HStack(alignment: .top, spacing: 8) {
-                                Button {
-                                    profileNavUserId = comment.userId
-                                } label: {
-                                    Text(comment.user)
-                                        .font(.caption.bold())
-                                        .foregroundColor(.ccGold)
-                                }
-                                Text(comment.comment)
-                                    .font(.caption)
+                        HStack(alignment: .top, spacing: 4) {
+                            Button {
+                                profileNavUserId = comment.userId
+                            } label: {
+                                Text(comment.user)
+                                    .font(.system(size: 13, weight: .semibold))
                                     .foregroundColor(.ccLightText)
                             }
-                            Text(comment.timestamp, format: .dateTime.month(.abbreviated).day().hour().minute())
-                                .font(.system(size: 9))
-                                .foregroundColor(.ccSubtext)
+                            Text(comment.comment)
+                                .font(.system(size: 13))
+                                .foregroundColor(.ccLightText.opacity(0.9))
                         }
                     }
 
-                    HStack {
+                    HStack(spacing: 8) {
                         TextField("Add a comment...", text: $commentText)
-                            .font(.caption)
+                            .font(.system(size: 13))
                             .foregroundColor(.ccLightText)
                             .textFieldStyle(.plain)
                         Button {
@@ -155,18 +158,36 @@ struct PostCardView: View {
                             onComment(commentText)
                             commentText = ""
                         } label: {
-                            Image(systemName: "paperplane.fill")
+                            Text("Post")
+                                .font(.system(size: 13, weight: .semibold))
                                 .foregroundColor(.ccGold)
                         }
                     }
-                    .padding(8)
-                    .background(Color.ccDarkBg)
-                    .clipShape(Capsule())
+                    .padding(.top, 4)
                 }
-                .transition(.opacity.combined(with: .move(edge: .top)))
+                .padding(.horizontal, 14)
+                .padding(.bottom, 4)
+                .transition(.opacity)
+            } else if !post.comments.isEmpty {
+                Button {
+                    withAnimation(.spring(response: 0.3)) { showComments = true }
+                } label: {
+                    Text("View all \(post.comments.count) comment\(post.comments.count == 1 ? "" : "s")")
+                        .font(.system(size: 13))
+                        .foregroundColor(.ccSubtext)
+                }
+                .padding(.horizontal, 14)
+                .padding(.bottom, 2)
             }
+
+            // ── Timestamp ──
+            Text(post.timestamp, format: .dateTime.month(.abbreviated).day().hour().minute())
+                .font(.system(size: 11))
+                .foregroundColor(.ccSubtext.opacity(0.6))
+                .padding(.horizontal, 14)
+                .padding(.bottom, 12)
         }
-        .ccCard()
+        .background(Color.black)
         .navigationDestination(item: $profileNavUserId) { userId in
             UserPassportScreen(userId: userId)
         }

@@ -10,25 +10,25 @@ struct DiscoverScreen: View {
 
     var body: some View {
         ZStack {
-            LinearGradient.ccBackground.ignoresSafeArea()
+            Color.black.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Header
+                // Instagram-style header
                 HStack {
-                    Text("Discover")
-                        .font(.title.bold())
+                    Text("The Culture Compass")
+                        .font(.system(size: 22, weight: .bold, design: .serif))
                         .foregroundColor(.ccGold)
                     Spacer()
-                    Button {
-                        showImagePicker = true
-                    } label: {
-                        Image(systemName: "plus.circle.fill")
+                    Button { showImagePicker = true } label: {
+                        Image(systemName: "plus.app")
                             .font(.title2)
-                            .foregroundColor(.ccGold)
+                            .foregroundColor(.ccLightText)
                     }
                 }
-                .padding(.horizontal)
-                .padding(.top, 8)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+
+                Divider().background(Color.ccSubtext.opacity(0.2))
 
                 if postManager.isLoading && postManager.posts.isEmpty {
                     Spacer()
@@ -36,7 +36,7 @@ struct DiscoverScreen: View {
                     Spacer()
                 } else {
                     ScrollView {
-                        LazyVStack(spacing: 16) {
+                        LazyVStack(spacing: 0) {
                             ForEach(postManager.posts) { post in
                                 PostCardView(
                                     post: post,
@@ -50,11 +50,8 @@ struct DiscoverScreen: View {
                                 )
                             }
                         }
-                        .padding()
                     }
-                    .refreshable {
-                        await postManager.refresh()
-                    }
+                    .refreshable { await postManager.refresh() }
                 }
             }
 
@@ -78,9 +75,7 @@ struct DiscoverScreen: View {
         }
         .animation(.easeInOut, value: showCreatePost)
         .sheet(isPresented: $showImagePicker, onDismiss: {
-            if imageData != nil {
-                showCreatePost = true
-            }
+            if imageData != nil { showCreatePost = true }
         }) {
             ImagePicker(imageData: $imageData)
         }
