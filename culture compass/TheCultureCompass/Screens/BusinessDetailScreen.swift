@@ -217,6 +217,7 @@ struct AddBusinessSheet: View {
     @State private var website = ""
     @State private var imageData: Data?
     @State private var showPicker = false
+    @State private var contentWarning: String?
 
     var body: some View {
         NavigationStack {
@@ -246,7 +247,26 @@ struct AddBusinessSheet: View {
                         Button("Add Photo") { showPicker = true }
                             .foregroundColor(.ccGold)
 
+                        if let contentWarning {
+                            Text(contentWarning)
+                                .font(.caption)
+                                .foregroundColor(.red)
+                        }
+
                         Button("Submit Listing") {
+                            // Validate all text fields
+                            let fields = [("Business name", name), ("Description", description), ("City", city), ("Country", country)]
+                            for (label, value) in fields {
+                                if !value.trimmingCharacters(in: .whitespaces).isEmpty {
+                                    let check = ContentFilter.isCleanContent(value)
+                                    if !check.clean {
+                                        contentWarning = "\(label): \(check.reason ?? "")"
+                                        return
+                                    }
+                                }
+                            }
+                            contentWarning = nil
+
                             let biz = Business(
                                 ownerId: "", name: name, category: category,
                                 country: country, city: city, description: description,

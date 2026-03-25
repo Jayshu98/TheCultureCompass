@@ -7,6 +7,7 @@ struct SignUpScreen: View {
     @State private var email = ""
     @State private var password = ""
     @State private var confirmPassword = ""
+    @State private var validationError: String?
 
     private var isValid: Bool {
         !username.isEmpty && !email.isEmpty && password.count >= 6 && password == confirmPassword
@@ -57,7 +58,7 @@ struct SignUpScreen: View {
                 }
                 .padding(.horizontal)
 
-                if let error = authManager.errorMessage {
+                if let error = validationError ?? authManager.errorMessage {
                     Text(error)
                         .font(.caption)
                         .foregroundColor(.red)
@@ -66,6 +67,12 @@ struct SignUpScreen: View {
                 }
 
                 Button("Create Account") {
+                    let check = ContentFilter.isValidUsername(username)
+                    if !check.valid {
+                        validationError = check.reason
+                        return
+                    }
+                    validationError = nil
                     Task { await authManager.signUp(email: email, password: password, username: username) }
                 }
                 .buttonStyle(CCButtonStyle())

@@ -7,6 +7,7 @@ struct DMChatScreen: View {
 
     @StateObject private var dmManager = DirectMessageManager()
     @State private var messageText = ""
+    @State private var contentWarning: String?
     @FocusState private var isInputFocused: Bool
 
     private var uid: String? { Auth.auth().currentUser?.uid }
@@ -34,25 +35,39 @@ struct DMChatScreen: View {
                 }
 
                 // Input bar
-                HStack(spacing: 10) {
-                    TextField("Message...", text: $messageText)
-                        .padding(10)
-                        .background(Color.ccCardBg)
-                        .clipShape(Capsule())
-                        .foregroundColor(.ccLightText)
-                        .focused($isInputFocused)
-
-                    Button {
-                        let text = messageText.trimmingCharacters(in: .whitespaces)
-                        guard !text.isEmpty else { return }
-                        messageText = ""
-                        Task { await dmManager.sendMessage(text, conversationId: conversationId) }
-                    } label: {
-                        Image(systemName: "paperplane.fill")
-                            .foregroundColor(.ccGold)
-                            .frame(width: 40, height: 40)
+                VStack(spacing: 4) {
+                    if let contentWarning {
+                        Text(contentWarning)
+                            .font(.system(size: 10))
+                            .foregroundColor(.red)
                     }
-                    .disabled(messageText.trimmingCharacters(in: .whitespaces).isEmpty)
+                    HStack(spacing: 10) {
+                        TextField("Message...", text: $messageText)
+                            .padding(10)
+                            .background(Color.ccCardBg)
+                            .clipShape(Capsule())
+                            .foregroundColor(.ccLightText)
+                            .focused($isInputFocused)
+
+                        Button {
+                            let text = messageText.trimmingCharacters(in: .whitespaces)
+                            guard !text.isEmpty else { return }
+                            let check = ContentFilter.isCleanContent(text)
+                            if !check.clean {
+                                contentWarning = check.reason
+                                return
+                            }
+                            contentWarning = nil
+                            messageText = ""
+                            Task { await dmManager.sendMessage(text, conversationId: conversationId) }
+                        } label: {
+                            Image(systemName: "paperplane.fill")
+                                .foregroundColor(.ccGold)
+                                .frame(width: 40, height: 40)
+                        }
+                        .disabled(messageText.trimmingCharacters(in: .whitespaces).isEmpty)
+                    }
+                }
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 8)

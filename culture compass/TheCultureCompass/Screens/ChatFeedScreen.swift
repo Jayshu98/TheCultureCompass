@@ -99,6 +99,7 @@ private struct ComposeOverlay: View {
     @Binding var text: String
     @Binding var isPresented: Bool
     let onSend: () -> Void
+    @State private var contentWarning: String?
 
     var body: some View {
         ZStack {
@@ -118,11 +119,23 @@ private struct ComposeOverlay: View {
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .foregroundColor(.ccLightText)
 
+                if let contentWarning {
+                    Text(contentWarning)
+                        .font(.caption)
+                        .foregroundColor(.red)
+                }
+
                 HStack {
                     Button("Cancel") { isPresented = false }
                         .foregroundColor(.ccSubtext)
                     Spacer()
                     Button("Send") {
+                        let check = ContentFilter.isCleanContent(text)
+                        if !check.clean {
+                            contentWarning = check.reason
+                            return
+                        }
+                        contentWarning = nil
                         onSend()
                         isPresented = false
                     }

@@ -88,6 +88,8 @@ struct ChatMessageView: View {
                             .textFieldStyle(.plain)
                         Button {
                             guard !replyText.trimmingCharacters(in: .whitespaces).isEmpty else { return }
+                            let check = ContentFilter.isCleanContent(replyText)
+                            guard check.clean else { return }
                             onReply(replyText)
                             replyText = ""
                         } label: {

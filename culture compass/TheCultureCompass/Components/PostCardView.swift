@@ -150,6 +150,8 @@ struct PostCardView: View {
                             .textFieldStyle(.plain)
                         Button {
                             guard !commentText.trimmingCharacters(in: .whitespaces).isEmpty else { return }
+                            let check = ContentFilter.isCleanContent(commentText)
+                            guard check.clean else { return }
                             onComment(commentText)
                             commentText = ""
                         } label: {

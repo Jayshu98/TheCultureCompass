@@ -5,6 +5,7 @@ struct CaptionPromptView: View {
     @Binding var location: String
     @Binding var isPresented: Bool
     let onSubmit: () -> Void
+    @State private var contentWarning: String?
 
     var body: some View {
         ZStack {
@@ -34,6 +35,12 @@ struct CaptionPromptView: View {
                 .background(Color.ccDarkBg)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
 
+                if let contentWarning {
+                    Text(contentWarning)
+                        .font(.caption)
+                        .foregroundColor(.red)
+                }
+
                 HStack(spacing: 16) {
                     Button("Cancel") {
                         isPresented = false
@@ -41,6 +48,12 @@ struct CaptionPromptView: View {
                     .foregroundColor(.ccSubtext)
 
                     Button("Post") {
+                        let check = ContentFilter.isCleanContent(caption)
+                        if !check.clean {
+                            contentWarning = check.reason
+                            return
+                        }
+                        contentWarning = nil
                         onSubmit()
                         isPresented = false
                     }
