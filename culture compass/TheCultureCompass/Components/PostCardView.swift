@@ -5,11 +5,11 @@ struct PostCardView: View {
     let post: Post
     let onComment: (String) -> Void
     let onDelete: () -> Void
+    let onTapProfile: (String) -> Void
 
     @State private var commentText = ""
     @State private var showComments = false
     @State private var showDeleteConfirm = false
-    @State private var profileNavUserId: String?
 
     private var isOwner: Bool {
         Auth.auth().currentUser?.uid == post.userId
@@ -54,7 +54,7 @@ struct PostCardView: View {
                 }
                 .contentShape(Rectangle())
                 .onTapGesture {
-                    profileNavUserId = post.userId
+                    onTapProfile(post.userId)
                 }
 
                 Spacer()
@@ -140,7 +140,7 @@ struct PostCardView: View {
                                     Text(comment.user).bold()
                                         .font(.system(size: 13))
                                         .foregroundColor(.ccGold)
-                                        .onTapGesture { profileNavUserId = comment.userId }
+                                        .onTapGesture { onTapProfile(comment.userId) }
 
                                     Text(comment.comment)
                                         .font(.system(size: 13))
@@ -179,12 +179,13 @@ struct PostCardView: View {
             .padding(.bottom, 20)
         }
         .background(Color.ccCardBg)
-        .cornerRadius(28)
-        .shadow(color: Color.black.opacity(0.25), radius: 20, x: 0, y: 12)
-        .padding(.vertical, 10)
-        .navigationDestination(item: $profileNavUserId) { userId in
-            UserPassportScreen(userId: userId)
-        }
+        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .stroke(Color.ccGold.opacity(0.08), lineWidth: 0.5)
+        )
+        .shadow(color: Color.black.opacity(0.35), radius: 16, x: 0, y: 8)
+        .padding(.vertical, 8)
         .alert("Delete Post?", isPresented: $showDeleteConfirm) {
             Button("Cancel", role: .cancel) {}
             Button("Delete", role: .destructive) { onDelete() }

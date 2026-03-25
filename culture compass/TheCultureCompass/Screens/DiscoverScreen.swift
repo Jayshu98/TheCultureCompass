@@ -7,36 +7,73 @@ struct DiscoverScreen: View {
     @State private var location = ""
     @State private var imageData: Data?
     @State private var showImagePicker = false
+    @State private var scrollOffset: CGFloat = 0
+    @State private var selectedProfileUserId: String?
 
     var body: some View {
-        ZStack {
-            Color.black.ignoresSafeArea()
+        ZStack(alignment: .bottomTrailing) {
+            // Background
+            Color.ccDarkBg.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Header
-                HStack {
-                    Text("The Culture Compass")
-                        .font(.system(size: 22, weight: .bold, design: .serif))
-                        .foregroundColor(.ccGold)
-                    Spacer()
-                    Button { showImagePicker = true } label: {
-                        Image(systemName: "plus.app")
-                            .font(.title2)
+                // ── Sleek Header ──
+                HStack(alignment: .center) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Discover")
+                            .font(.system(size: 28, weight: .bold, design: .serif))
                             .foregroundColor(.ccLightText)
+                        Text("See what the culture is up to")
+                            .font(.system(size: 13))
+                            .foregroundColor(.ccSubtext)
                     }
+                    Spacer()
+                    // Subtle gold compass icon
+                    Image(systemName: "safari")
+                        .font(.system(size: 22))
+                        .foregroundStyle(LinearGradient.ccGoldShimmer)
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
+                .padding(.horizontal, 20)
+                .padding(.top, 12)
+                .padding(.bottom, 14)
 
-                Divider().background(Color.ccSubtext.opacity(0.2))
+                // Thin gold accent line
+                Rectangle()
+                    .fill(LinearGradient(
+                        colors: [.clear, .ccGold.opacity(0.4), .ccGold.opacity(0.6), .ccGold.opacity(0.4), .clear],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    ))
+                    .frame(height: 1)
 
+                // ── Feed ──
                 if postManager.isLoading && postManager.posts.isEmpty {
                     Spacer()
-                    ProgressView().tint(.ccGold)
+                    VStack(spacing: 16) {
+                        ProgressView()
+                            .tint(.ccGold)
+                            .scaleEffect(1.2)
+                        Text("Loading the feed...")
+                            .font(.system(size: 14))
+                            .foregroundColor(.ccSubtext)
+                    }
+                    Spacer()
+                } else if postManager.posts.isEmpty {
+                    Spacer()
+                    VStack(spacing: 16) {
+                        Image(systemName: "globe.americas")
+                            .font(.system(size: 48))
+                            .foregroundStyle(LinearGradient.ccGoldShimmer)
+                        Text("No posts yet")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(.ccLightText)
+                        Text("Be the first to share something")
+                            .font(.system(size: 14))
+                            .foregroundColor(.ccSubtext)
+                    }
                     Spacer()
                 } else {
-                    ScrollView {
-                        LazyVStack(spacing: 0) {
+                    ScrollView(.vertical, showsIndicators: false) {
+                        LazyVStack(spacing: 6) {
                             ForEach(postManager.posts) { post in
                                 PostCardView(
                                     post: post,
@@ -46,16 +83,44 @@ struct DiscoverScreen: View {
                                     },
                                     onDelete: {
                                         Task { await postManager.deletePost(post) }
+                                    },
+                                    onTapProfile: { userId in
+                                        selectedProfileUserId = userId
                                     }
                                 )
+                                .padding(.horizontal, 12)
                             }
                         }
+                        .padding(.top, 10)
+                        .padding(.bottom, 100)
                     }
                     .refreshable { await postManager.refresh() }
                 }
             }
 
-            // Caption prompt overlay
+            // ── Floating Create Button ──
+            Button {
+                showImagePicker = true
+            } label: {
+                ZStack {
+                    Circle()
+                        .fill(LinearGradient(
+                            colors: [Color.ccGold, Color.ccBrown],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ))
+                        .frame(width: 58, height: 58)
+                        .shadow(color: .ccGold.opacity(0.4), radius: 12, y: 4)
+
+                    Image(systemName: "plus")
+                        .font(.system(size: 24, weight: .semibold))
+                        .foregroundColor(.white)
+                }
+            }
+            .padding(.trailing, 20)
+            .padding(.bottom, 24)
+
+            // ── Caption Prompt Overlay ──
             if showCreatePost {
                 CaptionPromptView(
                     caption: $caption,
@@ -74,6 +139,9 @@ struct DiscoverScreen: View {
             }
         }
         .animation(.easeInOut, value: showCreatePost)
+        .navigationDestination(item: $selectedProfileUserId) { userId in
+            UserPassportScreen(userId: userId)
+        }
         .sheet(isPresented: $showImagePicker, onDismiss: {
             if imageData != nil { showCreatePost = true }
         }) {
