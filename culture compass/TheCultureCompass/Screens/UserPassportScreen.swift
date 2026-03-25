@@ -11,6 +11,8 @@ struct UserPassportScreen: View {
     @State private var friendActionLoading = false
     @State private var dmConversationId: String?
     @State private var navigateToDM = false
+    @State private var friendsList: [AppUser] = []
+    @State private var showFriends = false
 
     private let db = Firestore.firestore()
     private let dmManager = DirectMessageManager()
@@ -332,6 +334,77 @@ struct UserPassportScreen: View {
                             )
                             .padding(.horizontal)
                         }
+                        // ═══════════════════════════════
+                        // PAGE 4: FRIENDS
+                        // ═══════════════════════════════
+                        if !user.friends.isEmpty {
+                            VStack(alignment: .leading, spacing: 0) {
+                                HStack {
+                                    Text("FRIENDS")
+                                        .font(.system(size: 8, weight: .bold, design: .serif))
+                                        .tracking(3)
+                                        .foregroundColor(passportBrown.opacity(0.4))
+                                    Spacer()
+                                    Text("\(user.friends.count)")
+                                        .font(.system(size: 10, weight: .bold, design: .serif))
+                                        .foregroundColor(passportBrown.opacity(0.5))
+                                    Text("P4")
+                                        .font(.system(size: 8, weight: .light, design: .serif))
+                                        .foregroundColor(passportBrown.opacity(0.3))
+                                        .padding(.leading, 8)
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.top, 12)
+                                .padding(.bottom, 8)
+
+                                if friendsList.isEmpty {
+                                    ProgressView().tint(passportBrown)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 16)
+                                } else {
+                                    LazyVStack(spacing: 0) {
+                                        ForEach(friendsList) { friend in
+                                            NavigationLink(destination: UserPassportScreen(userId: friend.id ?? "")) {
+                                                HStack(spacing: 10) {
+                                                    Circle()
+                                                        .fill(passportBrown.opacity(0.2))
+                                                        .frame(width: 32, height: 32)
+                                                        .overlay(
+                                                            Text(String(friend.username.prefix(1)).uppercased())
+                                                                .font(.caption.bold())
+                                                                .foregroundColor(passportBrown.opacity(0.7))
+                                                        )
+                                                    Text(friend.username)
+                                                        .font(.system(size: 12, weight: .medium, design: .serif))
+                                                        .foregroundColor(passportBrown.opacity(0.8))
+                                                    Spacer()
+                                                    Text("\(friend.visitedCountries.count) countries")
+                                                        .font(.system(size: 9, design: .serif))
+                                                        .foregroundColor(passportBrown.opacity(0.4))
+                                                    Image(systemName: "chevron.right")
+                                                        .font(.system(size: 9))
+                                                        .foregroundColor(passportBrown.opacity(0.3))
+                                                }
+                                                .padding(.horizontal, 16)
+                                                .padding(.vertical, 8)
+                                            }
+                                            .buttonStyle(.plain)
+                                        }
+                                    }
+                                    .padding(.bottom, 12)
+                                }
+                            }
+                            .background(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(pageColor)
+                                    .shadow(color: .black.opacity(0.3), radius: 6, y: 3)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .stroke(passportBrown.opacity(0.15), lineWidth: 0.5)
+                            )
+                            .padding(.horizontal)
+                        }
                     }
                     .padding(.bottom, 40)
                 }
@@ -348,6 +421,7 @@ struct UserPassportScreen: View {
         .task {
             await loadUser()
             await checkFriendship()
+            await loadFriends()
         }
     }
 
@@ -394,6 +468,20 @@ struct UserPassportScreen: View {
             ])
             isFriend = false
         } catch {}
+    }
+
+    private func loadFriends() async {
+        guard let user else { return }
+        var loaded: [AppUser] = []
+        for friendId in user.friends {
+            do {
+                let doc = try await db.collection("users").document(friendId).getDocument()
+                if let friend = try? doc.data(as: AppUser.self) {
+                    loaded.append(friend)
+                }
+            } catch {}
+        }
+        friendsList = loaded
     }
 }
 

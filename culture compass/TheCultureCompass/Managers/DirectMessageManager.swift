@@ -76,7 +76,7 @@ final class DirectMessageManager: ObservableObject {
 
             try await db.collection("conversations").document(conversationId).updateData([
                 "lastMessage": text,
-                "lastTimestamp": Timestamp(date: Date())
+                "lastTimestamp": Date()
             ])
         } catch {}
     }
