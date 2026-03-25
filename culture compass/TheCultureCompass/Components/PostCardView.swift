@@ -5,11 +5,11 @@ struct PostCardView: View {
     let post: Post
     let onComment: (String) -> Void
     let onDelete: () -> Void
-    let onTapProfile: (String) -> Void
 
     @State private var commentText = ""
     @State private var showComments = false
     @State private var showDeleteConfirm = false
+    @State private var profileNavUserId: String?
 
     private var isOwner: Bool {
         Auth.auth().currentUser?.uid == post.userId
@@ -17,59 +17,67 @@ struct PostCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // ── Header ──
-            HStack(spacing: 10) {
-                Button { onTapProfile(post.userId) } label: {
-                    ZStack {
-                        Circle()
-                            .strokeBorder(LinearGradient.ccGoldShimmer, lineWidth: 2)
-                            .frame(width: 38, height: 38)
-                        Circle()
-                            .fill(Color.ccCardBg)
-                            .frame(width: 32, height: 32)
-                            .overlay(
-                                Text(String(post.user.prefix(1)).uppercased())
-                                    .font(.system(size: 13, weight: .bold))
-                                    .foregroundColor(.ccGold)
-                            )
-                    }
-                }
 
-                Button { onTapProfile(post.userId) } label: {
-                    VStack(alignment: .leading, spacing: 1) {
+            // --- 1. HEADER (With Timestamp) ---
+            HStack(spacing: 12) {
+                HStack(spacing: 12) {
+                    Circle()
+                        .fill(LinearGradient(colors: [.ccGold, .ccBrown], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .frame(width: 44, height: 44)
+                        .overlay(
+                            Text(String(post.user.prefix(1)).uppercased())
+                                .font(.system(size: 18, weight: .bold, design: .rounded))
+                                .foregroundColor(.white)
+                        )
+
+                    VStack(alignment: .leading, spacing: 2) {
                         Text(post.user)
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.system(size: 16, weight: .bold))
                             .foregroundColor(.ccLightText)
-                        if !post.location.isEmpty {
-                            Text(post.location)
-                                .font(.system(size: 11))
+
+                        HStack(spacing: 6) {
+                            Text(post.timestamp, format: .dateTime.month(.abbreviated).day().hour().minute())
+                                .font(.system(size: 12))
                                 .foregroundColor(.ccSubtext)
+
+                            if !post.location.isEmpty {
+                                HStack(spacing: 2) {
+                                    Image(systemName: "mappin")
+                                        .font(.system(size: 10))
+                                    Text(post.location)
+                                        .font(.system(size: 12))
+                                }
+                                .foregroundColor(.ccGold)
+                            }
                         }
                     }
+                }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    profileNavUserId = post.userId
                 }
 
                 Spacer()
 
                 if isOwner {
                     Menu {
-                        Button(role: .destructive) {
-                            showDeleteConfirm = true
-                        } label: {
+                        Button(role: .destructive) { showDeleteConfirm = true } label: {
                             Label("Delete Post", systemImage: "trash")
                         }
                     } label: {
                         Image(systemName: "ellipsis")
-                            .font(.body)
-                            .foregroundColor(.ccLightText)
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundColor(.ccSubtext)
                             .frame(width: 44, height: 44)
                             .contentShape(Rectangle())
                     }
+                    .highPriorityGesture(TapGesture())
                 }
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
 
-            // ── Image (edge-to-edge) ──
+            // --- 2. FULL-BLEED IMAGE ---
             if !post.imageURL.isEmpty {
                 AsyncImage(url: URL(string: post.imageURL)) { phase in
                     switch phase {
@@ -77,14 +85,13 @@ struct PostCardView: View {
                         image
                             .resizable()
                             .aspectRatio(contentMode: .fill)
-                            .frame(maxWidth: .infinity)
-                            .frame(minHeight: 300, maxHeight: 450)
+                            .frame(minHeight: 450)
                             .clipped()
                     case .failure:
                         Rectangle()
                             .fill(Color.ccCardBg)
                             .frame(height: 300)
-                            .overlay(Image(systemName: "photo").font(.title).foregroundColor(.ccSubtext))
+                            .overlay(Image(systemName: "photo.fill").font(.largeTitle).foregroundColor(.ccSubtext))
                     default:
                         Rectangle()
                             .fill(Color.ccCardBg)
@@ -94,99 +101,93 @@ struct PostCardView: View {
                 }
             }
 
-            // ── Action buttons ──
-            HStack(spacing: 16) {
-                Button {
-                    withAnimation(.spring(response: 0.3)) { showComments.toggle() }
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "bubble.right")
-                            .font(.system(size: 20))
-                        if post.comments.count > 0 {
+            // --- 3. INTERACTION BAR ---
+            VStack(alignment: .leading, spacing: 14) {
+                HStack {
+                    Button {
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+                            showComments.toggle()
+                        }
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: showComments ? "bubble.left.fill" : "bubble.left")
+                                .font(.system(size: 24))
                             Text("\(post.comments.count)")
-                                .font(.system(size: 13))
+                                .font(.system(size: 16, weight: .medium))
                         }
                     }
+                    .buttonStyle(.plain)
                     .foregroundColor(.ccLightText)
+
+                    Spacer()
                 }
-                Spacer()
-            }
-            .padding(.horizontal, 14)
-            .padding(.top, 10)
-            .padding(.bottom, 6)
+                .padding(.top, 12)
 
-            // ── Caption ──
-            if !post.caption.isEmpty {
-                (Text(post.user).font(.system(size: 13, weight: .semibold)).foregroundColor(.ccLightText)
-                + Text(" ")
-                + Text(post.caption).font(.system(size: 13)).foregroundColor(.ccLightText.opacity(0.9)))
-                    .padding(.horizontal, 14)
-                    .padding(.bottom, 4)
-            }
+                // --- 4. CAPTION ---
+                if !post.caption.isEmpty {
+                    (Text(post.user).bold() + Text("  ") + Text(post.caption))
+                        .font(.system(size: 15))
+                        .foregroundColor(.ccLightText)
+                        .lineSpacing(3)
+                }
 
-            // ── Comments ──
-            if showComments {
-                VStack(alignment: .leading, spacing: 6) {
-                    ForEach(post.comments) { comment in
-                        HStack(alignment: .top, spacing: 4) {
-                            Button { onTapProfile(comment.userId) } label: {
-                                Text(comment.user)
-                                    .font(.system(size: 13, weight: .semibold))
-                                    .foregroundColor(.ccGold)
+                // --- 5. COMMENTS DRAWER ---
+                if showComments {
+                    VStack(alignment: .leading, spacing: 12) {
+                        ForEach(post.comments) { comment in
+                            VStack(alignment: .leading, spacing: 2) {
+                                HStack(alignment: .top, spacing: 8) {
+                                    Text(comment.user).bold()
+                                        .font(.system(size: 13))
+                                        .foregroundColor(.ccGold)
+                                        .onTapGesture { profileNavUserId = comment.userId }
+
+                                    Text(comment.comment)
+                                        .font(.system(size: 13))
+                                        .foregroundColor(.ccLightText)
+                                }
+                                Text(comment.timestamp, format: .dateTime.month(.abbreviated).day().hour().minute())
+                                    .font(.system(size: 9))
+                                    .foregroundColor(.ccSubtext)
                             }
-                            Text(comment.comment)
-                                .font(.system(size: 13))
-                                .foregroundColor(.ccLightText.opacity(0.9))
                         }
-                    }
 
-                    HStack(spacing: 8) {
-                        TextField("Add a comment...", text: $commentText)
-                            .font(.system(size: 13))
-                            .foregroundColor(.ccLightText)
-                            .textFieldStyle(.plain)
-                        Button {
-                            guard !commentText.trimmingCharacters(in: .whitespaces).isEmpty else { return }
-                            let check = ContentFilter.isCleanContent(commentText)
-                            guard check.clean else { return }
-                            onComment(commentText)
-                            commentText = ""
-                        } label: {
-                            Text("Post")
-                                .font(.system(size: 13, weight: .semibold))
+                        // Input Field
+                        HStack {
+                            TextField("Add a comment...", text: $commentText)
+                                .font(.system(size: 14))
+                                .padding(.horizontal, 4)
+
+                            if !commentText.trimmingCharacters(in: .whitespaces).isEmpty {
+                                Button("Post") {
+                                    onComment(commentText)
+                                    commentText = ""
+                                }
+                                .font(.system(size: 14, weight: .bold))
                                 .foregroundColor(.ccGold)
+                            }
                         }
+                        .padding(10)
+                        .background(Color.ccDarkBg.opacity(0.6))
+                        .cornerRadius(12)
                     }
-                    .padding(.top, 4)
+                    .padding(.top, 8)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
                 }
-                .padding(.horizontal, 14)
-                .padding(.bottom, 4)
-                .transition(.opacity)
-            } else if !post.comments.isEmpty {
-                Button {
-                    withAnimation(.spring(response: 0.3)) { showComments = true }
-                } label: {
-                    Text("View all \(post.comments.count) comment\(post.comments.count == 1 ? "" : "s")")
-                        .font(.system(size: 13))
-                        .foregroundColor(.ccSubtext)
-                }
-                .padding(.horizontal, 14)
-                .padding(.bottom, 2)
             }
-
-            // ── Timestamp ──
-            Text(post.timestamp, format: .dateTime.month(.abbreviated).day().hour().minute())
-                .font(.system(size: 11))
-                .foregroundColor(.ccSubtext.opacity(0.6))
-                .padding(.horizontal, 14)
-                .padding(.bottom, 12)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 20)
         }
-        .background(Color.black)
+        .background(Color.ccCardBg)
+        .cornerRadius(28)
+        .shadow(color: Color.black.opacity(0.25), radius: 20, x: 0, y: 12)
+        .padding(.vertical, 10)
+        .navigationDestination(item: $profileNavUserId) { userId in
+            UserPassportScreen(userId: userId)
+        }
         .alert("Delete Post?", isPresented: $showDeleteConfirm) {
             Button("Cancel", role: .cancel) {}
             Button("Delete", role: .destructive) { onDelete() }
-        } message: {
-            Text("This can't be undone.")
         }
     }
 }

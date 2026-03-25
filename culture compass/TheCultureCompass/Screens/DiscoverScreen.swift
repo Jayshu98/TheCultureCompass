@@ -7,7 +7,6 @@ struct DiscoverScreen: View {
     @State private var location = ""
     @State private var imageData: Data?
     @State private var showImagePicker = false
-    @State private var selectedUserId: String?
 
     var body: some View {
         ZStack {
@@ -47,9 +46,6 @@ struct DiscoverScreen: View {
                                     },
                                     onDelete: {
                                         Task { await postManager.deletePost(post) }
-                                    },
-                                    onTapProfile: { userId in
-                                        selectedUserId = userId
                                     }
                                 )
                             }
@@ -78,9 +74,6 @@ struct DiscoverScreen: View {
             }
         }
         .animation(.easeInOut, value: showCreatePost)
-        .navigationDestination(item: $selectedUserId) { userId in
-            UserPassportScreen(userId: userId)
-        }
         .sheet(isPresented: $showImagePicker, onDismiss: {
             if imageData != nil { showCreatePost = true }
         }) {

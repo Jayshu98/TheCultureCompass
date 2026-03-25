@@ -34,7 +34,7 @@ struct PassportScreen: View {
                             .padding(.horizontal, 40)
 
                         Text("PASSPORT")
-                            .font(.system(size: 11, weight: .bold, design: .serif))
+                            .font(.system(size: 14, weight: .bold, design: .serif))
                             .tracking(6)
                             .foregroundColor(passportGold.opacity(0.7))
 
@@ -51,7 +51,7 @@ struct PassportScreen: View {
                         }
 
                         Text("THE CULTURE COMPASS")
-                            .font(.system(size: 9, weight: .bold, design: .serif))
+                            .font(.system(size: 12, weight: .bold, design: .serif))
                             .tracking(4)
                             .foregroundColor(passportGold.opacity(0.6))
 
@@ -81,12 +81,12 @@ struct PassportScreen: View {
                         // Page header
                         HStack {
                             Text("IDENTIFICATION")
-                                .font(.system(size: 8, weight: .bold, design: .serif))
+                                .font(.system(size: 10, weight: .bold, design: .serif))
                                 .tracking(3)
                                 .foregroundColor(passportBrown.opacity(0.4))
                             Spacer()
                             Text("P1")
-                                .font(.system(size: 8, weight: .light, design: .serif))
+                                .font(.system(size: 10, weight: .light, design: .serif))
                                 .foregroundColor(passportBrown.opacity(0.3))
                         }
                         .padding(.horizontal, 16)
@@ -101,7 +101,7 @@ struct PassportScreen: View {
                                     } placeholder: {
                                         ProgressView().tint(passportBrown)
                                     }
-                                    .frame(width: 90, height: 110)
+                                    .frame(width: 100, height: 120)
                                     .clipShape(RoundedRectangle(cornerRadius: 4))
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 4)
@@ -110,7 +110,7 @@ struct PassportScreen: View {
                                 } else {
                                     RoundedRectangle(cornerRadius: 4)
                                         .fill(Color.white.opacity(0.5))
-                                        .frame(width: 90, height: 110)
+                                        .frame(width: 100, height: 120)
                                         .overlay(
                                             VStack(spacing: 4) {
                                                 Image(systemName: "camera.fill")
@@ -129,10 +129,10 @@ struct PassportScreen: View {
 
                             // Info fields
                             VStack(alignment: .leading, spacing: 8) {
-                                PassportField(label: "SURNAME / NAME", value: profileManager.user.username.uppercased())
-                                PassportField(label: "NATIONALITY", value: "CULTURE COMPASS CITIZEN")
-                                PassportField(label: "COUNTRIES VISITED", value: "\(profileManager.user.visitedCountries.count)")
-                                PassportField(label: "PHOTOS", value: "\(profileManager.user.scrapbookPhotos.count)")
+                                PassportField(label: "SURNAME / NAME", value: profileManager.user.username.uppercased(), valueSize: 15)
+                                PassportField(label: "NATIONALITY", value: "CULTURE COMPASS CITIZEN", valueSize: 14)
+                                PassportField(label: "COUNTRIES VISITED", value: "\(profileManager.user.visitedCountries.count)", valueSize: 14)
+                                PassportField(label: "PHOTOS", value: "\(profileManager.user.scrapbookPhotos.count)", valueSize: 14)
                             }
                         }
                         .padding(16)
@@ -140,14 +140,14 @@ struct PassportScreen: View {
                         // Bio section
                         VStack(alignment: .leading, spacing: 4) {
                             Text("PERSONAL STATEMENT")
-                                .font(.system(size: 7, weight: .bold, design: .serif))
+                                .font(.system(size: 9, weight: .bold, design: .serif))
                                 .tracking(2)
                                 .foregroundColor(passportBrown.opacity(0.4))
 
                             if isEditingBio {
                                 HStack {
                                     TextField("Write your bio...", text: $bioText)
-                                        .font(.system(size: 12, design: .serif))
+                                        .font(.system(size: 14, design: .serif))
                                         .foregroundColor(passportBrown)
                                         .padding(8)
                                         .background(Color.white.opacity(0.5))
@@ -162,7 +162,7 @@ struct PassportScreen: View {
                                 }
                             } else {
                                 Text(profileManager.user.bio.isEmpty ? "Tap to add your personal statement..." : profileManager.user.bio)
-                                    .font(.system(size: 12, design: .serif))
+                                    .font(.system(size: 14, design: .serif))
                                     .foregroundColor(profileManager.user.bio.isEmpty ? passportBrown.opacity(0.3) : passportBrown.opacity(0.8))
                                     .italic(profileManager.user.bio.isEmpty)
                                     .onTapGesture {
@@ -214,12 +214,12 @@ struct PassportScreen: View {
                         VStack(alignment: .leading, spacing: 0) {
                             HStack {
                                 Text("VISAS & STAMPS")
-                                    .font(.system(size: 8, weight: .bold, design: .serif))
+                                    .font(.system(size: 10, weight: .bold, design: .serif))
                                     .tracking(3)
                                     .foregroundColor(passportBrown.opacity(0.4))
                                 Spacer()
                                 Text("P2")
-                                    .font(.system(size: 8, weight: .light, design: .serif))
+                                    .font(.system(size: 10, weight: .light, design: .serif))
                                     .foregroundColor(passportBrown.opacity(0.3))
                             }
                             .padding(.horizontal, 16)
@@ -255,7 +255,7 @@ struct PassportScreen: View {
                     VStack(alignment: .leading, spacing: 0) {
                         HStack {
                             Text("TRAVEL MEMORIES")
-                                .font(.system(size: 8, weight: .bold, design: .serif))
+                                .font(.system(size: 10, weight: .bold, design: .serif))
                                 .tracking(3)
                                 .foregroundColor(passportBrown.opacity(0.4))
                             Spacer()
@@ -362,15 +362,15 @@ struct PassportScreen: View {
                         VStack(alignment: .leading, spacing: 0) {
                             HStack {
                                 Text("FRIENDS")
-                                    .font(.system(size: 8, weight: .bold, design: .serif))
+                                    .font(.system(size: 10, weight: .bold, design: .serif))
                                     .tracking(3)
                                     .foregroundColor(passportBrown.opacity(0.4))
                                 Spacer()
                                 Text("\(profileManager.user.friends.count)")
-                                    .font(.system(size: 10, weight: .bold, design: .serif))
+                                    .font(.system(size: 12, weight: .bold, design: .serif))
                                     .foregroundColor(passportBrown.opacity(0.5))
                                 Text("P4")
-                                    .font(.system(size: 8, weight: .light, design: .serif))
+                                    .font(.system(size: 10, weight: .light, design: .serif))
                                     .foregroundColor(passportBrown.opacity(0.3))
                                     .padding(.leading, 8)
                             }
@@ -396,11 +396,11 @@ struct PassportScreen: View {
                                                             .foregroundColor(passportBrown.opacity(0.7))
                                                     )
                                                 Text(friend.username)
-                                                    .font(.system(size: 12, weight: .medium, design: .serif))
+                                                    .font(.system(size: 14, weight: .medium, design: .serif))
                                                     .foregroundColor(passportBrown.opacity(0.8))
                                                 Spacer()
                                                 Text("\(friend.visitedCountries.count) countries")
-                                                    .font(.system(size: 9, design: .serif))
+                                                    .font(.system(size: 11, design: .serif))
                                                     .foregroundColor(passportBrown.opacity(0.4))
                                                 Image(systemName: "chevron.right")
                                                     .font(.system(size: 9))
@@ -461,16 +461,17 @@ struct PassportScreen: View {
 private struct PassportField: View {
     let label: String
     let value: String
+    var valueSize: CGFloat = 14
     private let brown = Color(red: 0.35, green: 0.18, blue: 0.08)
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 1) {
+        VStack(alignment: .leading, spacing: 2) {
             Text(label)
-                .font(.system(size: 7, weight: .bold, design: .serif))
+                .font(.system(size: 9, weight: .bold, design: .serif))
                 .tracking(1)
                 .foregroundColor(brown.opacity(0.35))
             Text(value)
-                .font(.system(size: 12, weight: .medium, design: .serif))
+                .font(.system(size: valueSize, weight: .medium, design: .serif))
                 .foregroundColor(brown.opacity(0.8))
             Rectangle()
                 .fill(brown.opacity(0.1))
@@ -491,13 +492,13 @@ private struct StampView: View {
     var body: some View {
         VStack(spacing: 4) {
             Text(country.flag)
-                .font(.system(size: 28))
+                .font(.system(size: 32))
             Text(country.name.uppercased())
-                .font(.system(size: 8, weight: .bold, design: .serif))
+                .font(.system(size: 10, weight: .bold, design: .serif))
                 .tracking(1)
                 .foregroundColor(brown.opacity(0.7))
             Text("APPROVED")
-                .font(.system(size: 6, weight: .bold, design: .monospaced))
+                .font(.system(size: 7, weight: .bold, design: .monospaced))
                 .foregroundColor(.green.opacity(0.6))
         }
         .padding(10)
@@ -525,7 +526,7 @@ private struct PassportActionPill: View {
                 .font(.caption2)
                 .foregroundColor(gold)
             Text(label)
-                .font(.system(size: 9, weight: .bold, design: .serif))
+                .font(.system(size: 11, weight: .bold, design: .serif))
                 .foregroundColor(.ccLightText)
         }
         .frame(maxWidth: .infinity)
