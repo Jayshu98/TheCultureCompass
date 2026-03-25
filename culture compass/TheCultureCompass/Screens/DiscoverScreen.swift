@@ -124,7 +124,7 @@ struct DiscoverScreen: View {
         .sheet(isPresented: $showImagePicker) {
             ImagePicker(imageData: $imageData)
         }
-        .onChange(of: imageData) { newData in
+        .onChange(of: imageData) { _, newData in
             if newData != nil { showCreatePost = true }
         }
         .onAppear { postManager.startListening() }

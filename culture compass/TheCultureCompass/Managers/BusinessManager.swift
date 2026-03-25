@@ -77,7 +77,6 @@ final class BusinessManager: ObservableObject {
                 comment: comment,
                 timestamp: Date()
             )
-            let encoded = try Firestore.Encoder().encode(review)
 
             // Get current business to recalculate rating
             let bizDoc = try await db.collection("businesses").document(businessId).getDocument()

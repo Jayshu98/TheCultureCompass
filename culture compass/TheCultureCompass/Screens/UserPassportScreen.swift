@@ -176,10 +176,10 @@ struct UserPassportScreen: View {
         .padding(.horizontal, 16).padding(.bottom, 8)
         .disabled(friendActionLoading)
 
-        // Message button
-        NavigationLink(destination: DMChatScreen(conversationId: dmConversationId ?? "", otherName: user.username), isActive: $navigateToDM) {
-            EmptyView()
-        }.hidden()
+        // Message button — navigation
+        .navigationDestination(isPresented: $navigateToDM) {
+            DMChatScreen(conversationId: dmConversationId ?? "", otherName: user.username)
+        }
 
         Button {
             Task {

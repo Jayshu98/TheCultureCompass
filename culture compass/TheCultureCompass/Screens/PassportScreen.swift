@@ -436,7 +436,7 @@ struct PassportScreen: View {
         .sheet(isPresented: $showScrapbookPicker) {
             ImagePicker(imageData: $scrapbookData)
         }
-        .onChange(of: imageData) { newData in
+        .onChange(of: imageData) { _, newData in
             if let data = newData {
                 Task {
                     await profileManager.uploadProfileImage(data)
@@ -444,7 +444,7 @@ struct PassportScreen: View {
                 }
             }
         }
-        .onChange(of: scrapbookData) { newData in
+        .onChange(of: scrapbookData) { _, newData in
             if let data = newData {
                 Task {
                     await profileManager.addScrapbookPhoto(data)
