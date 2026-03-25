@@ -17,28 +17,28 @@ struct ImagePicker: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: PHPickerViewController, context: Context) {}
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(self)
+        Coordinator(imageData: $imageData)
     }
 
     class Coordinator: NSObject, PHPickerViewControllerDelegate {
-        let parent: ImagePicker
+        @Binding var imageData: Data?
 
-        init(_ parent: ImagePicker) {
-            self.parent = parent
+        init(imageData: Binding<Data?>) {
+            _imageData = imageData
         }
 
         func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
             guard let provider = results.first?.itemProvider,
                   provider.canLoadObject(ofClass: UIImage.self) else {
-                parent.dismiss()
+                picker.dismiss(animated: true)
                 return
             }
             provider.loadObject(ofClass: UIImage.self) { image, _ in
                 DispatchQueue.main.async {
                     if let uiImage = image as? UIImage {
-                        self.parent.imageData = uiImage.jpegData(compressionQuality: 0.7)
+                        self.imageData = uiImage.jpegData(compressionQuality: 0.7)
                     }
-                    self.parent.dismiss()
+                    picker.dismiss(animated: true)
                 }
             }
         }

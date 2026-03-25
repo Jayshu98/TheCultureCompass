@@ -99,28 +99,6 @@ struct DiscoverScreen: View {
                 }
             }
 
-            // ── Floating Create Button ──
-            Button {
-                showImagePicker = true
-            } label: {
-                ZStack {
-                    Circle()
-                        .fill(LinearGradient(
-                            colors: [Color.ccGold, Color.ccBrown],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ))
-                        .frame(width: 58, height: 58)
-                        .shadow(color: .ccGold.opacity(0.4), radius: 12, y: 4)
-
-                    Image(systemName: "plus")
-                        .font(.system(size: 24, weight: .semibold))
-                        .foregroundColor(.white)
-                }
-            }
-            .padding(.trailing, 20)
-            .padding(.bottom, 24)
-
             // ── Caption Prompt Overlay ──
             if showCreatePost {
                 CaptionPromptView(
@@ -143,10 +121,11 @@ struct DiscoverScreen: View {
         .navigationDestination(item: $selectedProfileUserId) { userId in
             UserPassportScreen(userId: userId)
         }
-        .sheet(isPresented: $showImagePicker, onDismiss: {
-            if imageData != nil { showCreatePost = true }
-        }) {
+        .sheet(isPresented: $showImagePicker) {
             ImagePicker(imageData: $imageData)
+        }
+        .onChange(of: imageData) { newData in
+            if newData != nil { showCreatePost = true }
         }
         .onAppear { postManager.startListening() }
         .onDisappear { postManager.stopListening() }

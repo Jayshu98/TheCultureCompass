@@ -430,21 +430,27 @@ struct PassportScreen: View {
                 .padding(.bottom, 40)
             }
         }
-        .sheet(isPresented: $showImagePicker, onDismiss: {
-            if let data = imageData {
-                Task { await profileManager.uploadProfileImage(data) }
-                imageData = nil
-            }
-        }) {
+        .sheet(isPresented: $showImagePicker) {
             ImagePicker(imageData: $imageData)
         }
-        .sheet(isPresented: $showScrapbookPicker, onDismiss: {
-            if let data = scrapbookData {
-                Task { await profileManager.addScrapbookPhoto(data) }
-                scrapbookData = nil
-            }
-        }) {
+        .sheet(isPresented: $showScrapbookPicker) {
             ImagePicker(imageData: $scrapbookData)
+        }
+        .onChange(of: imageData) { newData in
+            if let data = newData {
+                Task {
+                    await profileManager.uploadProfileImage(data)
+                    imageData = nil
+                }
+            }
+        }
+        .onChange(of: scrapbookData) { newData in
+            if let data = newData {
+                Task {
+                    await profileManager.addScrapbookPhoto(data)
+                    scrapbookData = nil
+                }
+            }
         }
         .task {
             await profileManager.loadProfile()
