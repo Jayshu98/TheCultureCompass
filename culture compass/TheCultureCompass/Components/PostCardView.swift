@@ -5,11 +5,11 @@ struct PostCardView: View {
     let post: Post
     let onComment: (String) -> Void
     let onDelete: () -> Void
+    let onTapProfile: (String) -> Void
 
     @State private var commentText = ""
     @State private var showComments = false
     @State private var showDeleteConfirm = false
-    @State private var profileNavUserId: String?
 
     private var isOwner: Bool {
         Auth.auth().currentUser?.uid == post.userId
@@ -19,9 +19,7 @@ struct PostCardView: View {
         VStack(alignment: .leading, spacing: 0) {
             // ── Header ──
             HStack(spacing: 10) {
-                Button {
-                    profileNavUserId = post.userId
-                } label: {
+                Button { onTapProfile(post.userId) } label: {
                     ZStack {
                         Circle()
                             .strokeBorder(LinearGradient.ccGoldShimmer, lineWidth: 2)
@@ -37,9 +35,7 @@ struct PostCardView: View {
                     }
                 }
 
-                Button {
-                    profileNavUserId = post.userId
-                } label: {
+                Button { onTapProfile(post.userId) } label: {
                     VStack(alignment: .leading, spacing: 1) {
                         Text(post.user)
                             .font(.system(size: 14, weight: .semibold))
@@ -133,12 +129,10 @@ struct PostCardView: View {
                 VStack(alignment: .leading, spacing: 6) {
                     ForEach(post.comments) { comment in
                         HStack(alignment: .top, spacing: 4) {
-                            Button {
-                                profileNavUserId = comment.userId
-                            } label: {
+                            Button { onTapProfile(comment.userId) } label: {
                                 Text(comment.user)
                                     .font(.system(size: 13, weight: .semibold))
-                                    .foregroundColor(.ccLightText)
+                                    .foregroundColor(.ccGold)
                             }
                             Text(comment.comment)
                                 .font(.system(size: 13))
@@ -188,9 +182,6 @@ struct PostCardView: View {
                 .padding(.bottom, 12)
         }
         .background(Color.black)
-        .navigationDestination(item: $profileNavUserId) { userId in
-            UserPassportScreen(userId: userId)
-        }
         .alert("Delete Post?", isPresented: $showDeleteConfirm) {
             Button("Cancel", role: .cancel) {}
             Button("Delete", role: .destructive) { onDelete() }

@@ -3,11 +3,7 @@ import FirebaseAuth
 
 struct InboxScreen: View {
     @StateObject private var dmManager = DirectMessageManager()
-    @StateObject private var searchManager = UserSearchManager()
     @State private var showNewMessage = false
-    @State private var searchQuery = ""
-    @State private var navigateConvoId: String?
-    @State private var navigateOtherName: String?
 
     private var uid: String? { Auth.auth().currentUser?.uid }
 
@@ -64,31 +60,10 @@ struct InboxScreen: View {
                     }
                 }
             }
-
-            // Navigate after creating conversation
-            if let convoId = navigateConvoId, let name = navigateOtherName {
-                NavigationLink(
-                    destination: DMChatScreen(conversationId: convoId, otherName: name),
-                    isActive: Binding(
-                        get: { navigateConvoId != nil },
-                        set: { if !$0 { navigateConvoId = nil; navigateOtherName = nil } }
-                    )
-                ) { EmptyView() }
-                .hidden()
-            }
         }
         .onAppear { dmManager.startListeningConversations() }
-        .onDisappear { dmManager.stopListeningConversations() }
         .sheet(isPresented: $showNewMessage) {
-            NewMessageSheet(searchManager: searchManager, searchQuery: $searchQuery) { selectedUser in
-                showNewMessage = false
-                Task {
-                    if let convoId = await dmManager.findOrCreateConversation(with: selectedUser.id ?? "") {
-                        navigateConvoId = convoId
-                        navigateOtherName = selectedUser.username
-                    }
-                }
-            }
+            NewMessageSheet(dmManager: dmManager)
         }
     }
 }
@@ -96,9 +71,13 @@ struct InboxScreen: View {
 // MARK: - New Message Sheet
 
 private struct NewMessageSheet: View {
-    @ObservedObject var searchManager: UserSearchManager
-    @Binding var searchQuery: String
-    let onSelect: (AppUser) -> Void
+    @ObservedObject var dmManager: DirectMessageManager
+    @StateObject private var searchManager = UserSearchManager()
+    @StateObject private var profileManager = UserProfileManager()
+    @State private var searchQuery = ""
+    @State private var friends: [AppUser] = []
+    @State private var navigateConvoId: String?
+    @State private var navigateOtherName: String?
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -125,31 +104,40 @@ private struct NewMessageSheet: View {
                     .padding(.vertical, 8)
 
                     ScrollView {
-                        LazyVStack(spacing: 2) {
-                            ForEach(searchManager.results) { user in
-                                Button {
-                                    onSelect(user)
-                                } label: {
-                                    HStack(spacing: 12) {
-                                        Circle()
-                                            .fill(Color.ccBrown)
-                                            .frame(width: 40, height: 40)
-                                            .overlay(
-                                                Text(String(user.username.prefix(1)).uppercased())
-                                                    .font(.headline.bold())
-                                                    .foregroundColor(.ccGold)
-                                            )
-                                        Text(user.username)
-                                            .font(.subheadline.bold())
-                                            .foregroundColor(.ccLightText)
-                                        Spacer()
-                                    }
+                        LazyVStack(alignment: .leading, spacing: 0) {
+                            // Show friends first when not searching
+                            if searchQuery.isEmpty && !friends.isEmpty {
+                                Text("FRIENDS")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundColor(.ccSubtext)
                                     .padding(.horizontal)
-                                    .padding(.vertical, 10)
+                                    .padding(.top, 8)
+                                    .padding(.bottom, 4)
+
+                                ForEach(friends) { user in
+                                    UserRow(user: user) { selectUser(user) }
+                                }
+                            }
+
+                            // Search results
+                            if !searchQuery.isEmpty {
+                                ForEach(searchManager.results) { user in
+                                    UserRow(user: user) { selectUser(user) }
                                 }
                             }
                         }
                     }
+                }
+
+                if let convoId = navigateConvoId, let name = navigateOtherName {
+                    NavigationLink(
+                        destination: DMChatScreen(conversationId: convoId, otherName: name),
+                        isActive: Binding(
+                            get: { navigateConvoId != nil },
+                            set: { if !$0 { navigateConvoId = nil; navigateOtherName = nil; dismiss() } }
+                        )
+                    ) { EmptyView() }
+                    .hidden()
                 }
             }
             .navigationTitle("New Message")
@@ -161,6 +149,45 @@ private struct NewMessageSheet: View {
                         .foregroundColor(.ccGold)
                 }
             }
+            .task {
+                await profileManager.loadProfile()
+                friends = await profileManager.loadFriends()
+            }
+        }
+    }
+
+    private func selectUser(_ user: AppUser) {
+        Task {
+            if let convoId = await dmManager.findOrCreateConversation(with: user.id ?? "") {
+                navigateConvoId = convoId
+                navigateOtherName = user.username
+            }
+        }
+    }
+}
+
+private struct UserRow: View {
+    let user: AppUser
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Circle()
+                    .fill(Color.ccBrown)
+                    .frame(width: 40, height: 40)
+                    .overlay(
+                        Text(String(user.username.prefix(1)).uppercased())
+                            .font(.headline.bold())
+                            .foregroundColor(.ccGold)
+                    )
+                Text(user.username)
+                    .font(.subheadline.bold())
+                    .foregroundColor(.ccLightText)
+                Spacer()
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 10)
         }
     }
 }

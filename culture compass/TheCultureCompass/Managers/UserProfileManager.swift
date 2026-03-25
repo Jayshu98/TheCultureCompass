@@ -152,4 +152,38 @@ final class UserProfileManager: ObservableObject {
         }
         return friends
     }
+
+    // MARK: - Block
+
+    func blockUser(_ userId: String) async {
+        guard let uid else { return }
+        do {
+            try await db.collection("users").document(uid).updateData([
+                "blockedUsers": FieldValue.arrayUnion([userId])
+            ])
+            if !user.blockedUsers.contains(userId) {
+                user.blockedUsers.append(userId)
+            }
+            // Also remove from friends if they were friends
+            await removeFriend(userId)
+        } catch {
+            errorMessage = "Failed to block user."
+        }
+    }
+
+    func unblockUser(_ userId: String) async {
+        guard let uid else { return }
+        do {
+            try await db.collection("users").document(uid).updateData([
+                "blockedUsers": FieldValue.arrayRemove([userId])
+            ])
+            user.blockedUsers.removeAll { $0 == userId }
+        } catch {
+            errorMessage = "Failed to unblock user."
+        }
+    }
+
+    func isBlocked(_ userId: String) -> Bool {
+        user.blockedUsers.contains(userId)
+    }
 }

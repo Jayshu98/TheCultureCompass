@@ -13,6 +13,8 @@ struct UserPassportScreen: View {
     @State private var navigateToDM = false
     @State private var friendsList: [AppUser] = []
     @State private var showFriends = false
+    @State private var isBlocked = false
+    @State private var showBlockConfirm = false
 
     private let db = Firestore.firestore()
     private let dmManager = DirectMessageManager()
@@ -219,6 +221,28 @@ struct UserPassportScreen: View {
                                 }
                                 .padding(.horizontal, 16)
                                 .padding(.bottom, 12)
+
+                                // Block button
+                                Button {
+                                    showBlockConfirm = true
+                                } label: {
+                                    HStack(spacing: 6) {
+                                        Image(systemName: isBlocked ? "hand.raised.slash" : "hand.raised.fill")
+                                        Text(isBlocked ? "Unblock" : "Block User")
+                                    }
+                                    .font(.system(size: 11, weight: .bold, design: .serif))
+                                    .foregroundColor(isBlocked ? .orange : .red.opacity(0.8))
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 10)
+                                    .background(Color.red.opacity(0.08))
+                                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .stroke(Color.red.opacity(0.2), lineWidth: 0.5)
+                                    )
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.bottom, 12)
                             }
 
                             // MRZ
@@ -421,7 +445,37 @@ struct UserPassportScreen: View {
         .task {
             await loadUser()
             await checkFriendship()
+            await checkBlocked()
             await loadFriends()
+        }
+        .alert(isBlocked ? "Unblock User?" : "Block User?", isPresented: $showBlockConfirm) {
+            Button("Cancel", role: .cancel) {}
+            Button(isBlocked ? "Unblock" : "Block", role: .destructive) {
+                Task {
+                    guard let myUid = Auth.auth().currentUser?.uid else { return }
+                    if isBlocked {
+                        try? await db.collection("users").document(myUid).updateData([
+                            "blockedUsers": FieldValue.arrayRemove([userId])
+                        ])
+                        isBlocked = false
+                    } else {
+                        try? await db.collection("users").document(myUid).updateData([
+                            "blockedUsers": FieldValue.arrayUnion([userId])
+                        ])
+                        // Also remove friend
+                        try? await db.collection("users").document(myUid).updateData([
+                            "friends": FieldValue.arrayRemove([userId])
+                        ])
+                        try? await db.collection("users").document(userId).updateData([
+                            "friends": FieldValue.arrayRemove([myUid])
+                        ])
+                        isBlocked = true
+                        isFriend = false
+                    }
+                }
+            }
+        } message: {
+            Text(isBlocked ? "They will be able to see your profile and message you again." : "They won't be able to message you or see your profile.")
         }
     }
 
@@ -482,6 +536,15 @@ struct UserPassportScreen: View {
             } catch {}
         }
         friendsList = loaded
+    }
+
+    private func checkBlocked() async {
+        guard let myUid = Auth.auth().currentUser?.uid else { return }
+        do {
+            let doc = try await db.collection("users").document(myUid).getDocument()
+            let blocked = doc.data()?["blockedUsers"] as? [String] ?? []
+            isBlocked = blocked.contains(userId)
+        } catch {}
     }
 }
 

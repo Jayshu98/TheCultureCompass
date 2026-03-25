@@ -7,13 +7,14 @@ struct DiscoverScreen: View {
     @State private var location = ""
     @State private var imageData: Data?
     @State private var showImagePicker = false
+    @State private var selectedUserId: String?
 
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Instagram-style header
+                // Header
                 HStack {
                     Text("The Culture Compass")
                         .font(.system(size: 22, weight: .bold, design: .serif))
@@ -46,6 +47,9 @@ struct DiscoverScreen: View {
                                     },
                                     onDelete: {
                                         Task { await postManager.deletePost(post) }
+                                    },
+                                    onTapProfile: { userId in
+                                        selectedUserId = userId
                                     }
                                 )
                             }
@@ -74,6 +78,9 @@ struct DiscoverScreen: View {
             }
         }
         .animation(.easeInOut, value: showCreatePost)
+        .navigationDestination(item: $selectedUserId) { userId in
+            UserPassportScreen(userId: userId)
+        }
         .sheet(isPresented: $showImagePicker, onDismiss: {
             if imageData != nil { showCreatePost = true }
         }) {

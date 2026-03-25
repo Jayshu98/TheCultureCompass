@@ -68,7 +68,6 @@ struct DMChatScreen: View {
                         .disabled(messageText.trimmingCharacters(in: .whitespaces).isEmpty)
                     }
                 }
-                }
                 .padding(.horizontal)
                 .padding(.vertical, 8)
                 .background(Color.ccDarkBg)

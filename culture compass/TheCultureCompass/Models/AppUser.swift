@@ -10,6 +10,7 @@ struct AppUser: Identifiable, Codable, Equatable {
     var scrapbookPhotos: [String]
     var visitedCountries: [String]
     var friends: [String]
+    var blockedUsers: [String]
 
     static let empty = AppUser(
         username: "",
@@ -18,6 +19,7 @@ struct AppUser: Identifiable, Codable, Equatable {
         profileImageURL: "",
         scrapbookPhotos: [],
         visitedCountries: [],
-        friends: []
+        friends: [],
+        blockedUsers: []
     )
 }
