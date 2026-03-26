@@ -329,10 +329,9 @@ struct PassportScreen: View {
                             .padding(.vertical, 32)
                         } else {
                             LazyVGrid(columns: [
-                                GridItem(.flexible(), spacing: 8),
-                                GridItem(.flexible(), spacing: 8),
-                                GridItem(.flexible(), spacing: 8)
-                            ], spacing: 8) {
+                                GridItem(.flexible(), spacing: 10),
+                                GridItem(.flexible(), spacing: 10)
+                            ], spacing: 10) {
                                 ForEach(profileManager.user.scrapbookPhotos, id: \.self) { url in
                                     ZStack(alignment: .topTrailing) {
                                         AsyncImage(url: URL(string: url)) { image in
@@ -340,7 +339,7 @@ struct PassportScreen: View {
                                         } placeholder: {
                                             Color(red: 0.88, green: 0.85, blue: 0.78)
                                         }
-                                        .frame(height: 120)
+                                        .frame(height: 200)
                                         .clipShape(RoundedRectangle(cornerRadius: 4))
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 4)

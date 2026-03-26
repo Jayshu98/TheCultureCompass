@@ -71,4 +71,13 @@ final class EventManager: ObservableObject {
             errorMessage = "Failed to cancel RSVP."
         }
     }
+
+    func deleteEvent(_ eventId: String) async {
+        do {
+            try await db.collection("events").document(eventId).delete()
+            events.removeAll { $0.id == eventId }
+        } catch {
+            errorMessage = "Failed to delete event."
+        }
+    }
 }

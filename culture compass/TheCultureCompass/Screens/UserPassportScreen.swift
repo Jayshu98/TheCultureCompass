@@ -396,14 +396,14 @@ private struct ScrapbookPage: View {
             }
             .padding(.horizontal, 16).padding(.top, 12).padding(.bottom, 8)
 
-            LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], spacing: 8) {
+            LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
                 ForEach(photos, id: \.self) { url in
                     AsyncImage(url: URL(string: url)) { image in
                         image.resizable().aspectRatio(contentMode: .fill)
                     } placeholder: {
                         Color(red: 0.88, green: 0.85, blue: 0.78)
                     }
-                    .frame(height: 120)
+                    .frame(height: 200)
                     .clipShape(RoundedRectangle(cornerRadius: 4))
                     .overlay(RoundedRectangle(cornerRadius: 4).stroke(brown.opacity(0.15), lineWidth: 0.5))
                     .shadow(color: brown.opacity(0.15), radius: 3, y: 2)

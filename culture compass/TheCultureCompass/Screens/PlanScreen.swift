@@ -65,19 +65,19 @@ struct PlanScreen: View {
                                 icon: "doc.text",
                                 title: "Customs & Entry Info",
                                 subtitle: "Requirements for \(country.name)",
-                                urlString: "https://travel.state.gov/content/travel/en/international-travel.html"
+                                urlString: "https://www.google.com/search?q=\(country.name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? country.name)+entry+requirements+visa"
                             )
                             PlanLinkCard(
                                 icon: "cross.case",
                                 title: "Vaccine Requirements",
                                 subtitle: "Health info for \(country.name)",
-                                urlString: "https://wwwnc.cdc.gov/travel/destinations/list"
+                                urlString: "https://wwwnc.cdc.gov/travel/destinations/traveler/none/\(country.name.lowercased().replacingOccurrences(of: " ", with: "-"))"
                             )
                             PlanLinkCard(
                                 icon: "exclamationmark.triangle",
                                 title: "Travel Warnings",
-                                subtitle: "Safety advisories",
-                                urlString: "https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories.html"
+                                subtitle: "Advisories for \(country.name)",
+                                urlString: "https://www.google.com/search?q=\(country.name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? country.name)+travel+advisory+safety"
                             )
 
                             // Affiliate links
@@ -88,27 +88,27 @@ struct PlanScreen: View {
 
                             PlanLinkCard(
                                 icon: "suitcase",
-                                title: "Book Hotels",
+                                title: "Hotels in \(country.name)",
                                 subtitle: "Find the best stays",
-                                urlString: "https://www.booking.com"
+                                urlString: "https://www.booking.com/searchresults.html?ss=\(country.name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? country.name)"
                             )
                             PlanLinkCard(
                                 icon: "airplane",
-                                title: "Book Flights",
+                                title: "Flights to \(country.name)",
                                 subtitle: "Compare flight prices",
-                                urlString: "https://www.skyscanner.com"
+                                urlString: "https://www.skyscanner.com/transport/flights/anywhere/\(country.code.lowercased())"
                             )
                             PlanLinkCard(
                                 icon: "shield",
                                 title: "Travel Insurance",
-                                subtitle: "Protect your trip",
-                                urlString: "https://www.worldnomads.com"
+                                subtitle: "Protect your \(country.name) trip",
+                                urlString: "https://www.worldnomads.com/travel-insurance/get-a-quote?country=\(country.name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? country.name)"
                             )
                             PlanLinkCard(
                                 icon: "bag",
                                 title: "Travel Gear",
-                                subtitle: "Recommended products",
-                                urlString: "https://www.amazon.com/s?k=travel+essentials"
+                                subtitle: "Essentials for \(country.name)",
+                                urlString: "https://www.amazon.com/s?k=travel+essentials+\(country.name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? country.name)"
                             )
 
                             // Excursions & Tours

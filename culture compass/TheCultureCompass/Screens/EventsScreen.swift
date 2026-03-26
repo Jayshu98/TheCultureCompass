@@ -43,15 +43,22 @@ struct EventsScreen: View {
                     ScrollView {
                         LazyVStack(spacing: 12) {
                             ForEach(manager.events) { event in
-                                EventCard(event: event) {
-                                    guard let id = event.id else { return }
-                                    let uid = Auth.auth().currentUser?.uid ?? ""
-                                    if event.attendees.contains(uid) {
-                                        Task { await manager.cancelRsvp(id) }
-                                    } else {
-                                        Task { await manager.rsvp(id) }
+                                EventCard(
+                                    event: event,
+                                    onRSVP: {
+                                        guard let id = event.id else { return }
+                                        let uid = Auth.auth().currentUser?.uid ?? ""
+                                        if event.attendees.contains(uid) {
+                                            Task { await manager.cancelRsvp(id) }
+                                        } else {
+                                            Task { await manager.rsvp(id) }
+                                        }
+                                    },
+                                    onDelete: {
+                                        guard let id = event.id else { return }
+                                        Task { await manager.deleteEvent(id) }
                                     }
-                                }
+                                )
                             }
                         }
                         .padding()
@@ -70,8 +77,11 @@ struct EventsScreen: View {
 private struct EventCard: View {
     let event: CCEvent
     let onRSVP: () -> Void
+    let onDelete: () -> Void
+    @State private var showDeleteConfirm = false
     private var uid: String? { Auth.auth().currentUser?.uid }
     private var isAttending: Bool { uid.map { event.attendees.contains($0) } ?? false }
+    private var isOrganizer: Bool { uid == event.organizerId }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -85,6 +95,13 @@ private struct EventCard: View {
                         .foregroundColor(.ccSubtext)
                 }
                 Spacer()
+                if isOrganizer {
+                    Button { showDeleteConfirm = true } label: {
+                        Image(systemName: "trash")
+                            .font(.caption)
+                            .foregroundColor(.red.opacity(0.7))
+                    }
+                }
                 VStack(alignment: .trailing, spacing: 2) {
                     Text(event.date, format: .dateTime.month(.abbreviated).day())
                         .font(.caption.bold())
@@ -117,6 +134,12 @@ private struct EventCard: View {
             }
         }
         .ccCard()
+        .alert("Delete Event?", isPresented: $showDeleteConfirm) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete", role: .destructive) { onDelete() }
+        } message: {
+            Text("This can't be undone.")
+        }
     }
 }
 
