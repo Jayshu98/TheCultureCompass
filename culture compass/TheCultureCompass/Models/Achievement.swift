@@ -17,7 +17,6 @@ struct Achievement: Identifiable, Hashable {
         Achievement(id: "10_reviews", title: "Trusted Reviewer", description: "Write 10 safety reviews", icon: "checkmark.seal.fill", requirement: 10),
         Achievement(id: "first_itinerary", title: "Trip Planner", description: "Create your first itinerary", icon: "map.circle.fill", requirement: 1),
         Achievement(id: "5_scrapbook", title: "Photographer", description: "Add 5 scrapbook photos", icon: "camera.circle.fill", requirement: 5),
-        Achievement(id: "group_trip", title: "Squad Leader", description: "Join a group trip", icon: "person.3.fill", requirement: 1),
         Achievement(id: "helper", title: "Community Helper", description: "Leave 25 comments", icon: "heart.circle.fill", requirement: 25),
     ]
 }

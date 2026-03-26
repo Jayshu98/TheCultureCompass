@@ -50,7 +50,6 @@ struct AchievementsScreen: View {
         case "10_reviews": return stats.reviewCount >= 10
         case "first_itinerary": return stats.itineraryCount >= 1
         case "5_scrapbook": return stats.scrapbookCount >= 5
-        case "group_trip": return stats.groupTripCount >= 1
         case "helper": return stats.commentCount >= 25
         default: return false
         }

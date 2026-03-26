@@ -12,6 +12,7 @@ struct PassportScreen: View {
     @State private var selectedPhoto: String?
     @State private var currentPage = 0
     @State private var myFriends: [AppUser] = []
+    @State private var showCountryPicker = false
 
     private let passportBrown = Color(red: 0.35, green: 0.18, blue: 0.08)
     private let passportGold = Color(red: 0.82, green: 0.68, blue: 0.21)
@@ -211,22 +212,48 @@ struct PassportScreen: View {
                     // ═══════════════════════════════════
                     // PAGE 2: VISA STAMPS (Countries)
                     // ═══════════════════════════════════
-                    if !profileManager.user.visitedCountries.isEmpty {
-                        VStack(alignment: .leading, spacing: 0) {
-                            HStack {
-                                Text("VISAS & STAMPS")
-                                    .font(.system(size: 10, weight: .bold, design: .serif))
-                                    .tracking(3)
-                                    .foregroundColor(passportBrown.opacity(0.4))
-                                Spacer()
-                                Text("P2")
-                                    .font(.system(size: 10, weight: .light, design: .serif))
-                                    .foregroundColor(passportBrown.opacity(0.3))
+                    VStack(alignment: .leading, spacing: 0) {
+                        HStack {
+                            Text("VISAS & STAMPS")
+                                .font(.system(size: 10, weight: .bold, design: .serif))
+                                .tracking(3)
+                                .foregroundColor(passportBrown.opacity(0.4))
+                            Spacer()
+                            Button { showCountryPicker = true } label: {
+                                HStack(spacing: 3) {
+                                    Image(systemName: "plus")
+                                        .font(.system(size: 9))
+                                    Text("ADD")
+                                        .font(.system(size: 8, weight: .bold))
+                                }
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(passportBrown)
+                                .clipShape(Capsule())
                             }
-                            .padding(.horizontal, 16)
-                            .padding(.top, 12)
-                            .padding(.bottom, 8)
+                            Text("P2")
+                                .font(.system(size: 10, weight: .light, design: .serif))
+                                .foregroundColor(passportBrown.opacity(0.3))
+                                .padding(.leading, 8)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.top, 12)
+                        .padding(.bottom, 8)
 
+                        if profileManager.user.visitedCountries.isEmpty {
+                            VStack(spacing: 10) {
+                                Image(systemName: "globe.americas")
+                                    .font(.system(size: 32))
+                                    .foregroundColor(passportBrown.opacity(0.2))
+                                Text("No stamps yet — add your first country")
+                                    .font(.system(size: 11, design: .serif))
+                                    .foregroundColor(passportBrown.opacity(0.3))
+                                    .italic()
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 32)
+                        } else {
                             // Stamps grid — scattered like real passport stamps
                             let columns = [GridItem(.adaptive(minimum: 90), spacing: 12)]
                             LazyVGrid(columns: columns, spacing: 14) {
@@ -238,17 +265,17 @@ struct PassportScreen: View {
                             }
                             .padding(16)
                         }
-                        .background(
-                            RoundedRectangle(cornerRadius: 6)
-                                .fill(stampPageColor)
-                                .shadow(color: .black.opacity(0.3), radius: 6, y: 3)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 6)
-                                .stroke(passportBrown.opacity(0.15), lineWidth: 0.5)
-                        )
-                        .padding(.horizontal)
                     }
+                    .background(
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(stampPageColor)
+                            .shadow(color: .black.opacity(0.3), radius: 6, y: 3)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6)
+                            .stroke(passportBrown.opacity(0.15), lineWidth: 0.5)
+                    )
+                    .padding(.horizontal)
 
                     // ═══════════════════════════════════
                     // PAGE 3: SCRAPBOOK
@@ -476,6 +503,14 @@ struct PassportScreen: View {
         .fullScreenCover(item: $selectedPhoto) { url in
             ZoomableImageView(url: url, location: nil)
         }
+        .sheet(isPresented: $showCountryPicker) {
+            CountryPickerSheet(
+                alreadyVisited: profileManager.user.visitedCountries,
+                onSelect: { code in
+                    Task { await profileManager.addVisitedCountry(code) }
+                }
+            )
+        }
     }
 }
 
@@ -625,5 +660,77 @@ private struct ProfilePhotoConfirmSheet: View {
             .padding(24)
         }
         .presentationDetents([.medium])
+    }
+}
+
+// MARK: - Country Picker
+
+private struct CountryPickerSheet: View {
+    let alreadyVisited: [String]
+    let onSelect: (String) -> Void
+    @State private var search = ""
+    @Environment(\.dismiss) private var dismiss
+
+    private let brown = Color(red: 0.35, green: 0.18, blue: 0.08)
+
+    private var available: [Country] {
+        let unvisited = Country.all.filter { !alreadyVisited.contains($0.code) }
+        if search.isEmpty { return unvisited }
+        return unvisited.filter { $0.name.localizedCaseInsensitiveContains(search) }
+    }
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                LinearGradient.ccBackground.ignoresSafeArea()
+
+                VStack(spacing: 0) {
+                    HStack {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(.ccSubtext)
+                        TextField("Search countries...", text: $search)
+                            .foregroundColor(.ccLightText)
+                    }
+                    .padding(10)
+                    .background(Color.ccCardBg)
+                    .clipShape(Capsule())
+                    .padding(.horizontal)
+                    .padding(.vertical, 8)
+
+                    ScrollView {
+                        LazyVStack(spacing: 2) {
+                            ForEach(available) { country in
+                                Button {
+                                    onSelect(country.code)
+                                    dismiss()
+                                } label: {
+                                    HStack(spacing: 12) {
+                                        Text(country.flag)
+                                            .font(.system(size: 28))
+                                        Text(country.name)
+                                            .font(.system(size: 15, weight: .medium))
+                                            .foregroundColor(.ccLightText)
+                                        Spacer()
+                                        Image(systemName: "plus.circle")
+                                            .foregroundColor(.ccGold)
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 10)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Add Country")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                        .foregroundColor(.ccGold)
+                }
+            }
+        }
     }
 }
