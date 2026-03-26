@@ -18,6 +18,8 @@ struct BusinessDetailScreen: View {
                     // Hero image
                     if !business.imageURL.isEmpty {
                         KFImage(URL(string: business.imageURL))
+                            .placeholder { Color.ccCardBg }
+                            .fade(duration: 0.25)
                             .resizable()
                             .aspectRatio(contentMode: .fill)
                         .frame(height: 220)

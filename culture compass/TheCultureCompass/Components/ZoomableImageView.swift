@@ -42,6 +42,8 @@ struct ZoomableImageView: View {
                 Spacer()
 
                 KFImage(URL(string: url))
+                    .placeholder { ProgressView().tint(.ccGold) }
+                    .fade(duration: 0.25)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .scaleEffect(scale)

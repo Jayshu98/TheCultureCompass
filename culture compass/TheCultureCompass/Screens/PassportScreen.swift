@@ -100,6 +100,8 @@ struct PassportScreen: View {
                             Button { showImagePicker = true } label: {
                                 if !profileManager.user.profileImageURL.isEmpty {
                                     KFImage(URL(string: profileManager.user.profileImageURL))
+                                        .placeholder { ProgressView().tint(.ccGold) }
+                                        .fade(duration: 0.25)
                                         .resizable()
                                         .aspectRatio(contentMode: .fill)
                                         .frame(width: 100, height: 120)
@@ -334,6 +336,8 @@ struct PassportScreen: View {
                                 ForEach(profileManager.user.scrapbookPhotos, id: \.self) { url in
                                     ZStack(alignment: .topTrailing) {
                                         KFImage(URL(string: url))
+                                            .placeholder { Color(red: 0.88, green: 0.85, blue: 0.78) }
+                                            .fade(duration: 0.25)
                                             .resizable()
                                             .aspectRatio(contentMode: .fill)
                                         .frame(height: 200)

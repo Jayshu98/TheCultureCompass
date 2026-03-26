@@ -81,6 +81,11 @@ struct PostCardView: View {
             // --- 2. FULL-BLEED IMAGE ---
             if !post.imageURL.isEmpty {
                 KFImage(URL(string: post.imageURL))
+                    .placeholder {
+                        Rectangle().fill(Color.ccCardBg).frame(height: 300)
+                            .overlay(ProgressView().tint(.ccGold))
+                    }
+                    .fade(duration: 0.25)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
                     .frame(minHeight: 450)

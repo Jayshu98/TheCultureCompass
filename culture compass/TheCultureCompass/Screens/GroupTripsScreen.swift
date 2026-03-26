@@ -89,6 +89,8 @@ private struct FeaturedTripCard: View {
         VStack(alignment: .leading, spacing: 8) {
             if !trip.imageURL.isEmpty {
                 KFImage(URL(string: trip.imageURL))
+                    .placeholder { Color.ccCardBg }
+                    .fade(duration: 0.25)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
                 .frame(width: 240, height: 140)
@@ -175,6 +177,8 @@ struct GroupTripDetailScreen: View {
                 VStack(alignment: .leading, spacing: 16) {
                     if !trip.imageURL.isEmpty {
                         KFImage(URL(string: trip.imageURL))
+                            .placeholder { Color.ccCardBg }
+                            .fade(duration: 0.25)
                             .resizable()
                             .aspectRatio(contentMode: .fill)
                         .frame(height: 220)

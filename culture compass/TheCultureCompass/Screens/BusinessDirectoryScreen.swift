@@ -144,6 +144,8 @@ private struct FeaturedBusinessCard: View {
         VStack(alignment: .leading, spacing: 8) {
             if !business.imageURL.isEmpty {
                 KFImage(URL(string: business.imageURL))
+                    .placeholder { Color.ccCardBg }
+                    .fade(duration: 0.25)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
                 .frame(width: 200, height: 120)
@@ -176,6 +178,8 @@ private struct BusinessRow: View {
         HStack(spacing: 12) {
             if !business.imageURL.isEmpty {
                 KFImage(URL(string: business.imageURL))
+                    .placeholder { Color.ccCardBg }
+                    .fade(duration: 0.25)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
                 .frame(width: 60, height: 60)

@@ -119,6 +119,8 @@ private struct MatchCard: View {
                 NavigationLink(destination: UserPassportScreen(userId: match.userId)) {
                     if !match.profileImageURL.isEmpty {
                         KFImage(URL(string: match.profileImageURL))
+                            .placeholder { Color.ccBrown }
+                            .fade(duration: 0.25)
                             .resizable()
                             .aspectRatio(contentMode: .fill)
                         .frame(width: 48, height: 48)

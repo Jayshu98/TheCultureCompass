@@ -35,6 +35,9 @@ struct UserPassportScreen: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbarColorScheme(.dark, for: .navigationBar)
+        .navigationDestination(isPresented: $navigateToDM) {
+            DMChatScreen(conversationId: dmConversationId ?? "", otherName: user?.username ?? "")
+        }
         .fullScreenCover(item: $selectedPhoto) { url in
             ZoomableImageView(url: url, location: nil)
         }
@@ -176,11 +179,6 @@ struct UserPassportScreen: View {
         }
         .padding(.horizontal, 16).padding(.bottom, 8)
         .disabled(friendActionLoading)
-
-        // Message button — navigation
-        .navigationDestination(isPresented: $navigateToDM) {
-            DMChatScreen(conversationId: dmConversationId ?? "", otherName: user.username)
-        }
 
         Button {
             Task {
@@ -333,6 +331,8 @@ private struct UserPhotoView: View {
     var body: some View {
         if !url.isEmpty {
             KFImage(URL(string: url))
+                .placeholder { Color(red: 0.88, green: 0.85, blue: 0.78) }
+                .fade(duration: 0.25)
                 .resizable()
                 .aspectRatio(contentMode: .fill)
             .frame(width: 90, height: 110)
@@ -398,6 +398,8 @@ private struct ScrapbookPage: View {
             LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
                 ForEach(photos, id: \.self) { url in
                     KFImage(URL(string: url))
+                        .placeholder { Color(red: 0.88, green: 0.85, blue: 0.78) }
+                        .fade(duration: 0.25)
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                     .frame(height: 200)
