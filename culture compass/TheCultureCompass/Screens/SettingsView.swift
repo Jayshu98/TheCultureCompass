@@ -2,6 +2,8 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject var authManager: AuthManager
+    @State private var showDeleteConfirm = false
+    @State private var isDeleting = false
 
     var body: some View {
         ZStack {
@@ -10,7 +12,7 @@ struct SettingsView: View {
             VStack(spacing: 24) {
                 HStack {
                     Text("Settings")
-                        .font(.title.bold())
+                        .font(.system(size: 28, weight: .bold, design: .serif))
                         .foregroundColor(.ccGold)
                     Spacer()
                 }
@@ -46,8 +48,37 @@ struct SettingsView: View {
                 }
                 .padding(.horizontal)
 
+                Button {
+                    showDeleteConfirm = true
+                } label: {
+                    HStack {
+                        Image(systemName: "trash")
+                        Text("Delete Account")
+                    }
+                    .font(.subheadline)
+                    .foregroundColor(.red.opacity(0.7))
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.red.opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                }
+                .padding(.horizontal)
+                .disabled(isDeleting)
+
                 Spacer()
             }
+        }
+        .alert("Delete Account?", isPresented: $showDeleteConfirm) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete Forever", role: .destructive) {
+                isDeleting = true
+                Task {
+                    await authManager.deleteAccount()
+                    isDeleting = false
+                }
+            }
+        } message: {
+            Text("This will permanently delete your account, posts, and all data. This cannot be undone.")
         }
     }
 }

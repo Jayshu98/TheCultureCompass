@@ -5,6 +5,9 @@ struct LoginScreen: View {
     @State private var email = ""
     @State private var password = ""
     @State private var showSignUp = false
+    @State private var showResetPassword = false
+    @State private var resetEmail = ""
+    @State private var resetMessage: String?
 
     var body: some View {
         ZStack {
@@ -65,12 +68,28 @@ struct LoginScreen: View {
                 .font(.footnote)
                 .foregroundColor(.ccSubtext)
 
+                Button("Forgot Password?") {
+                    resetEmail = email
+                    showResetPassword = true
+                }
+                .font(.footnote)
+                .foregroundColor(.ccGold)
+
                 Spacer()
             }
         }
         .fullScreenCover(isPresented: $showSignUp) {
             SignUpScreen()
                 .environmentObject(authManager)
+        }
+        .alert("Reset Password", isPresented: $showResetPassword) {
+            TextField("Email", text: $resetEmail)
+            Button("Cancel", role: .cancel) { resetMessage = nil }
+            Button("Send Reset Link") {
+                Task { await authManager.resetPassword(email: resetEmail) }
+            }
+        } message: {
+            Text("Enter your email and we'll send you a link to reset your password.")
         }
     }
 }

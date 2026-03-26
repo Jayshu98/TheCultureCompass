@@ -72,6 +72,14 @@ final class AuthManager: ObservableObject {
         isLoading = false
     }
 
+    func resetPassword(email: String) async {
+        do {
+            try await Auth.auth().sendPasswordReset(withEmail: email)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
     func signOut() {
         Task { await NotificationManager.shared.clearToken() }
         do {
@@ -87,6 +95,32 @@ final class AuthManager: ObservableObject {
             appUser = try doc.data(as: AppUser.self)
         } catch {
             errorMessage = "Failed to load profile."
+        }
+    }
+
+    func deleteAccount() async {
+        guard let user = Auth.auth().currentUser else { return }
+        let uid = user.uid
+        do {
+            // Delete user data from Firestore
+            try await db.collection("users").document(uid).delete()
+
+            // Delete posts by this user
+            let posts = try await db.collection("posts").whereField("userId", isEqualTo: uid).getDocuments()
+            for doc in posts.documents { try await doc.reference.delete() }
+
+            // Delete itineraries by this user
+            let itineraries = try await db.collection("itineraries").whereField("userId", isEqualTo: uid).getDocuments()
+            for doc in itineraries.documents { try await doc.reference.delete() }
+
+            // Delete safety ratings by this user
+            let ratings = try await db.collection("safety_ratings").whereField("userId", isEqualTo: uid).getDocuments()
+            for doc in ratings.documents { try await doc.reference.delete() }
+
+            // Delete the Firebase Auth account
+            try await user.delete()
+        } catch {
+            errorMessage = "Failed to delete account. You may need to sign in again first."
         }
     }
 }
