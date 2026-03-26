@@ -87,7 +87,8 @@ struct InboxScreen: View {
                         ForEach(dmManager.conversations) { convo in
                             if let uid {
                                 let otherName = convo.participantNames.first(where: { $0.key != uid })?.value ?? "User"
-                                NavigationLink(destination: DMChatScreen(conversationId: convo.id ?? "", otherName: otherName)) {
+                                let otherUserId = convo.participants.first(where: { $0 != uid }) ?? ""
+                                NavigationLink(destination: DMChatScreen(conversationId: convo.id ?? "", otherName: otherName, otherUserId: otherUserId)) {
                                     ConvoRow(name: otherName, lastMessage: convo.lastMessage, timestamp: convo.lastTimestamp)
                                 }
                                 .listRowBackground(Color.clear)

@@ -4,10 +4,12 @@ import FirebaseAuth
 struct DMChatScreen: View {
     let conversationId: String
     let otherName: String
+    var otherUserId: String = ""
 
     @StateObject private var dmManager = DirectMessageManager()
     @State private var messageText = ""
     @State private var contentWarning: String?
+    @State private var profileNavUserId: String?
     @FocusState private var isInputFocused: Bool
 
     private var uid: String? { Auth.auth().currentUser?.uid }
@@ -33,8 +35,10 @@ struct DMChatScreen: View {
                     ScrollView {
                         LazyVStack(spacing: 8) {
                             ForEach(dmManager.messages) { msg in
-                                DMBubble(message: msg, isMe: msg.senderId == uid)
-                                    .id(msg.id)
+                                DMBubble(message: msg, isMe: msg.senderId == uid) {
+                                    profileNavUserId = msg.senderId
+                                }
+                                .id(msg.id)
                             }
                         }
                         .padding()
@@ -88,6 +92,24 @@ struct DMChatScreen: View {
         .navigationTitle(otherName)
         .navigationBarTitleDisplayMode(.inline)
         .toolbarColorScheme(.dark, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    // Find the other user's ID from messages or otherUserId
+                    if !otherUserId.isEmpty {
+                        profileNavUserId = otherUserId
+                    } else if let msg = dmManager.messages.first(where: { $0.senderId != uid }) {
+                        profileNavUserId = msg.senderId
+                    }
+                } label: {
+                    Image(systemName: "person.circle")
+                        .foregroundColor(.ccGold)
+                }
+            }
+        }
+        .navigationDestination(item: $profileNavUserId) { userId in
+            UserPassportScreen(userId: userId)
+        }
         .onAppear { dmManager.startListeningMessages(conversationId: conversationId) }
         .onDisappear { dmManager.stopListeningMessages() }
     }
@@ -96,10 +118,24 @@ struct DMChatScreen: View {
 private struct DMBubble: View {
     let message: DirectMessage
     let isMe: Bool
+    let onTapProfile: () -> Void
 
     var body: some View {
-        HStack {
+        HStack(alignment: .bottom, spacing: 8) {
             if isMe { Spacer() }
+
+            if !isMe {
+                Button(action: onTapProfile) {
+                    Circle()
+                        .fill(Color.ccBrown)
+                        .frame(width: 28, height: 28)
+                        .overlay(
+                            Text(String(message.senderName.prefix(1)).uppercased())
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundColor(.ccGold)
+                        )
+                }
+            }
 
             VStack(alignment: isMe ? .trailing : .leading, spacing: 3) {
                 Text(message.text)
