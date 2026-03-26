@@ -10,6 +10,7 @@ struct DMChatScreen: View {
     @State private var messageText = ""
     @State private var contentWarning: String?
     @State private var profileNavUserId: String?
+    @State private var showProfileNav = false
     @FocusState private var isInputFocused: Bool
 
     private var uid: String? { Auth.auth().currentUser?.uid }
@@ -37,6 +38,7 @@ struct DMChatScreen: View {
                             ForEach(dmManager.messages) { msg in
                                 DMBubble(message: msg, isMe: msg.senderId == uid) {
                                     profileNavUserId = msg.senderId
+                                    showProfileNav = true
                                 }
                                 .id(msg.id)
                             }
@@ -95,20 +97,20 @@ struct DMChatScreen: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    // Find the other user's ID from messages or otherUserId
                     if !otherUserId.isEmpty {
                         profileNavUserId = otherUserId
                     } else if let msg = dmManager.messages.first(where: { $0.senderId != uid }) {
                         profileNavUserId = msg.senderId
                     }
+                    showProfileNav = true
                 } label: {
                     Image(systemName: "person.circle")
                         .foregroundColor(.ccGold)
                 }
             }
         }
-        .navigationDestination(item: $profileNavUserId) { userId in
-            UserPassportScreen(userId: userId)
+        .navigationDestination(isPresented: $showProfileNav) {
+            UserPassportScreen(userId: profileNavUserId ?? "")
         }
         .onAppear { dmManager.startListeningMessages(conversationId: conversationId) }
         .onDisappear { dmManager.stopListeningMessages() }

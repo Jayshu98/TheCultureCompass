@@ -9,6 +9,7 @@ struct DiscoverScreen: View {
     @State private var showImagePicker = false
     @State private var scrollOffset: CGFloat = 0
     @State private var selectedProfileUserId: String?
+    @State private var showProfile = false
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
@@ -87,6 +88,7 @@ struct DiscoverScreen: View {
                                     },
                                     onTapProfile: { userId in
                                         selectedProfileUserId = userId
+                                        showProfile = true
                                     }
                                 )
                                 .padding(.horizontal, 12)
@@ -118,8 +120,8 @@ struct DiscoverScreen: View {
             }
         }
         .animation(.easeInOut, value: showCreatePost)
-        .navigationDestination(item: $selectedProfileUserId) { userId in
-            UserPassportScreen(userId: userId)
+        .navigationDestination(isPresented: $showProfile) {
+            UserPassportScreen(userId: selectedProfileUserId ?? "")
         }
         .sheet(isPresented: $showImagePicker) {
             ImagePicker(imageData: $imageData)

@@ -293,6 +293,11 @@ extension String: @retroactive Identifiable {
     public var id: String { self }
 }
 
+struct IdentifiableString: Identifiable {
+    let id: String
+    var value: String { id }
+}
+
 // MARK: - Sub Views
 
 private struct PassportCoverSection: View {
