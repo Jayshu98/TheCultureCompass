@@ -7,7 +7,7 @@ struct UserPassportScreen: View {
     let userId: String
     @State private var user: AppUser?
     @State private var isLoading = true
-    @State private var selectedPhoto: String?
+    @State private var selectedPhoto: IdentifiableString?
     @State private var isFriend = false
     @State private var friendActionLoading = false
     @State private var dmConversationId: String?
@@ -38,8 +38,8 @@ struct UserPassportScreen: View {
         .navigationDestination(isPresented: $navigateToDM) {
             DMChatScreen(conversationId: dmConversationId ?? "", otherName: user?.username ?? "")
         }
-        .fullScreenCover(item: $selectedPhoto) { url in
-            ZoomableImageView(url: url, location: nil)
+        .fullScreenCover(item: $selectedPhoto) { photo in
+            ZoomableImageView(url: photo.value, location: nil)
         }
         .task {
             await loadUser()
@@ -289,15 +289,6 @@ struct UserPassportScreen: View {
     }
 }
 
-extension String: @retroactive Identifiable {
-    public var id: String { self }
-}
-
-struct IdentifiableString: Identifiable {
-    let id: String
-    var value: String { id }
-}
-
 // MARK: - Sub Views
 
 private struct PassportCoverSection: View {
@@ -387,7 +378,7 @@ private struct StampsPage: View {
 
 private struct ScrapbookPage: View {
     let photos: [String]
-    @Binding var selectedPhoto: String?
+    @Binding var selectedPhoto: IdentifiableString?
     private let brown = UserPassportScreen.passportBrown
     private let page = UserPassportScreen.pageColor
 
@@ -411,7 +402,7 @@ private struct ScrapbookPage: View {
                     .clipShape(RoundedRectangle(cornerRadius: 4))
                     .overlay(RoundedRectangle(cornerRadius: 4).stroke(brown.opacity(0.15), lineWidth: 0.5))
                     .shadow(color: brown.opacity(0.15), radius: 3, y: 2)
-                    .onTapGesture { selectedPhoto = url }
+                    .onTapGesture { selectedPhoto = IdentifiableString(id: url) }
                 }
             }
             .padding(.horizontal, 16).padding(.bottom, 16)

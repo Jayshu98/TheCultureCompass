@@ -10,7 +10,7 @@ struct PassportScreen: View {
     @State private var scrapbookData: Data?
     @State private var isEditingBio = false
     @State private var bioText = ""
-    @State private var selectedPhoto: String?
+    @State private var selectedPhoto: IdentifiableString?
     @State private var currentPage = 0
     @State private var myFriends: [AppUser] = []
     @State private var showCountryPicker = false
@@ -348,7 +348,7 @@ struct PassportScreen: View {
                                         )
                                         // Polaroid shadow effect
                                         .shadow(color: passportBrown.opacity(0.15), radius: 3, y: 2)
-                                        .onTapGesture { selectedPhoto = url }
+                                        .onTapGesture { selectedPhoto = IdentifiableString(id: url) }
 
                                         // Delete button
                                         Button {
@@ -500,8 +500,8 @@ struct PassportScreen: View {
             await profileManager.loadProfile()
             myFriends = await profileManager.loadFriends()
         }
-        .fullScreenCover(item: $selectedPhoto) { url in
-            ZoomableImageView(url: url, location: nil)
+        .fullScreenCover(item: $selectedPhoto) { photo in
+            ZoomableImageView(url: photo.value, location: nil)
         }
         .sheet(isPresented: $showCountryPicker) {
             CountryPickerSheet(
