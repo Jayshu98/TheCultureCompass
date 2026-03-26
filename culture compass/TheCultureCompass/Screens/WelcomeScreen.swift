@@ -26,7 +26,7 @@ struct WelcomeScreen: View {
         WelcomePage(
             emoji: "📋",
             title: "Plan",
-            subtitle: "Build itineraries, find group trips,\ndiscover events, and browse Black-owned businesses.",
+            subtitle: "Build itineraries, find group trips,\ndiscover events, and browse local businesses.",
             color: .ccGold
         ),
         WelcomePage(

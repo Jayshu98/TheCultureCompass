@@ -13,7 +13,7 @@ struct BusinessDirectoryScreen: View {
 
             VStack(spacing: 0) {
                 HStack {
-                    Text("Black-Owned")
+                    Text("Local Businesses")
                         .font(.title.bold())
                         .foregroundColor(.ccGold)
                     Spacer()

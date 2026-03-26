@@ -46,7 +46,7 @@ struct PlanScreen: View {
                                 PlanFeatureCard(icon: "shield.checkered", title: "Safety Ratings", subtitle: "Community reviews for \(country.name)")
                             }
                             NavigationLink(destination: BusinessDirectoryScreen()) {
-                                PlanFeatureCard(icon: "storefront", title: "Black-Owned Businesses", subtitle: "Find businesses in \(country.name)")
+                                PlanFeatureCard(icon: "storefront", title: "Local Businesses", subtitle: "Find businesses in \(country.name)")
                             }
                             NavigationLink(destination: EventsScreen()) {
                                 PlanFeatureCard(icon: "calendar", title: "Events", subtitle: "Meetups & cultural events")
@@ -109,6 +109,37 @@ struct PlanScreen: View {
                                 title: "Travel Gear",
                                 subtitle: "Recommended products",
                                 urlString: "https://www.amazon.com/s?k=travel+essentials"
+                            )
+
+                            // Excursions & Tours
+                            Text("Excursions & Tours")
+                                .font(.caption.bold())
+                                .foregroundColor(.ccSubtext)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+
+                            PlanLinkCard(
+                                icon: "binoculars",
+                                title: "Top Experiences",
+                                subtitle: "Tours & activities in \(country.name)",
+                                urlString: "https://www.viator.com/searchResults/all?text=\(country.name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? country.name)"
+                            )
+                            PlanLinkCard(
+                                icon: "figure.walk",
+                                title: "Walking Tours",
+                                subtitle: "Explore \(country.name) on foot",
+                                urlString: "https://www.viator.com/searchResults/all?text=\(country.name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? country.name)+walking+tour"
+                            )
+                            PlanLinkCard(
+                                icon: "fork.knife",
+                                title: "Food & Culture Tours",
+                                subtitle: "Taste the local cuisine",
+                                urlString: "https://www.viator.com/searchResults/all?text=\(country.name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? country.name)+food+tour"
+                            )
+                            PlanLinkCard(
+                                icon: "sun.max",
+                                title: "Day Trips",
+                                subtitle: "Full-day excursions from \(country.name)",
+                                urlString: "https://www.viator.com/searchResults/all?text=\(country.name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? country.name)+day+trip"
                             )
                         }
                         .padding()
