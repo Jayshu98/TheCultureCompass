@@ -44,12 +44,12 @@ struct PassportScreen: View {
                         ZStack {
                             Circle()
                                 .stroke(passportGold.opacity(0.3), lineWidth: 1.5)
-                                .frame(width: 80, height: 80)
+                                .frame(width: 110, height: 110)
                             Circle()
                                 .stroke(passportGold.opacity(0.2), lineWidth: 1)
-                                .frame(width: 92, height: 92)
+                                .frame(width: 124, height: 124)
                             Text("🌍")
-                                .font(.system(size: 38))
+                                .font(.system(size: 58))
                         }
 
                         Text("THE CULTURE COMPASS")

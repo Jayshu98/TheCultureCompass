@@ -116,4 +116,18 @@ final class DirectMessageManager: ObservableObject {
             return nil
         }
     }
+
+    func deleteConversation(_ conversationId: String) async {
+        do {
+            // Delete all messages in the subcollection first
+            let messages = try await db.collection("conversations").document(conversationId)
+                .collection("messages").getDocuments()
+            for doc in messages.documents {
+                try await doc.reference.delete()
+            }
+            // Delete the conversation document
+            try await db.collection("conversations").document(conversationId).delete()
+            conversations.removeAll { $0.id == conversationId }
+        } catch {}
+    }
 }

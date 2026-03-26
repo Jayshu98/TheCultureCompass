@@ -11,6 +11,18 @@ struct ChatFeedScreen: View {
             LinearGradient.ccBackground.ignoresSafeArea()
 
             VStack(spacing: 0) {
+                // Auto-delete warning
+                HStack(spacing: 6) {
+                    Image(systemName: "clock")
+                        .font(.system(size: 10))
+                    Text("Messages disappear after 7 days")
+                        .font(.system(size: 11))
+                }
+                .foregroundColor(.ccGold.opacity(0.7))
+                .padding(.vertical, 6)
+                .frame(maxWidth: .infinity)
+                .background(Color.ccGold.opacity(0.08))
+
                 if chatManager.isLoading && chatManager.messages.isEmpty {
                     Spacer()
                     ProgressView().tint(.ccGold)

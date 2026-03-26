@@ -45,19 +45,27 @@ struct InboxScreen: View {
                     }
                     Spacer()
                 } else {
-                    ScrollView {
-                        LazyVStack(spacing: 2) {
-                            ForEach(dmManager.conversations) { convo in
-                                if let uid {
-                                    let otherName = convo.participantNames.first(where: { $0.key != uid })?.value ?? "User"
-                                    NavigationLink(destination: DMChatScreen(conversationId: convo.id ?? "", otherName: otherName)) {
-                                        ConvoRow(name: otherName, lastMessage: convo.lastMessage, timestamp: convo.lastTimestamp)
+                    List {
+                        ForEach(dmManager.conversations) { convo in
+                            if let uid {
+                                let otherName = convo.participantNames.first(where: { $0.key != uid })?.value ?? "User"
+                                NavigationLink(destination: DMChatScreen(conversationId: convo.id ?? "", otherName: otherName)) {
+                                    ConvoRow(name: otherName, lastMessage: convo.lastMessage, timestamp: convo.lastTimestamp)
+                                }
+                                .listRowBackground(Color.ccCardBg.opacity(0.3))
+                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                    Button(role: .destructive) {
+                                        guard let id = convo.id else { return }
+                                        Task { await dmManager.deleteConversation(id) }
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
                                     }
-                                    .buttonStyle(.plain)
                                 }
                             }
                         }
                     }
+                    .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
                     .refreshable {
                         dmManager.stopListeningConversations()
                         dmManager.startListeningConversations()
@@ -233,5 +241,34 @@ private struct ConvoRow: View {
         .padding(.horizontal)
         .padding(.vertical, 12)
         .background(Color.ccCardBg.opacity(0.3))
+    }
+}
+
+private struct ConvoRowWithDelete: View {
+    let name: String
+    let lastMessage: String
+    let timestamp: Date
+    let conversationId: String
+    let onDelete: () -> Void
+    @State private var showDeleteConfirm = false
+
+    var body: some View {
+        NavigationLink(destination: DMChatScreen(conversationId: conversationId, otherName: name)) {
+            ConvoRow(name: name, lastMessage: lastMessage, timestamp: timestamp)
+        }
+        .buttonStyle(.plain)
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button(role: .destructive) {
+                showDeleteConfirm = true
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+        }
+        .alert("Delete Conversation?", isPresented: $showDeleteConfirm) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete", role: .destructive) { onDelete() }
+        } message: {
+            Text("This will delete all messages. This can't be undone.")
+        }
     }
 }
