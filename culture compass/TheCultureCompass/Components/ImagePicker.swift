@@ -36,7 +36,7 @@ struct ImagePicker: UIViewControllerRepresentable {
             provider.loadObject(ofClass: UIImage.self) { image, _ in
                 DispatchQueue.main.async {
                     if let uiImage = image as? UIImage {
-                        self.imageData = uiImage.jpegData(compressionQuality: 0.5)
+                        self.imageData = uiImage.jpegData(compressionQuality: 0.7)
                     }
                     picker.dismiss(animated: true)
                 }

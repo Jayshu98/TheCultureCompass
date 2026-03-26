@@ -1,5 +1,4 @@
 import SwiftUI
-import Kingfisher
 import FirebaseAuth
 
 struct GroupTripsScreen: View {
@@ -88,11 +87,9 @@ private struct FeaturedTripCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             if !trip.imageURL.isEmpty {
-                KFImage(URL(string: trip.imageURL))
-                    .placeholder { Color.ccCardBg }
-                    .fade(duration: 0.25)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
+                AsyncImage(url: URL(string: trip.imageURL)) { image in
+                    image.resizable().aspectRatio(contentMode: .fill)
+                } placeholder: { Color.ccCardBg }
                 .frame(width: 240, height: 140)
                 .clipShape(RoundedRectangle(cornerRadius: 14))
                 .overlay(
@@ -176,11 +173,9 @@ struct GroupTripDetailScreen: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     if !trip.imageURL.isEmpty {
-                        KFImage(URL(string: trip.imageURL))
-                            .placeholder { Color.ccCardBg }
-                            .fade(duration: 0.25)
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
+                        AsyncImage(url: URL(string: trip.imageURL)) { image in
+                            image.resizable().aspectRatio(contentMode: .fill)
+                        } placeholder: { Color.ccCardBg }
                         .frame(height: 220)
                         .clipShape(RoundedRectangle(cornerRadius: 16))
                     }

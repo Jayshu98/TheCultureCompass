@@ -1,5 +1,4 @@
 import SwiftUI
-import Kingfisher
 import FirebaseAuth
 import FirebaseFirestore
 
@@ -7,7 +6,7 @@ struct UserPassportScreen: View {
     let userId: String
     @State private var user: AppUser?
     @State private var isLoading = true
-    @State private var selectedPhoto: IdentifiableString?
+    @State private var selectedPhoto: String?
     @State private var isFriend = false
     @State private var friendActionLoading = false
     @State private var dmConversationId: String?
@@ -35,11 +34,8 @@ struct UserPassportScreen: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbarColorScheme(.dark, for: .navigationBar)
-        .navigationDestination(isPresented: $navigateToDM) {
-            DMChatScreen(conversationId: dmConversationId ?? "", otherName: user?.username ?? "")
-        }
-        .fullScreenCover(item: $selectedPhoto) { photo in
-            ZoomableImageView(url: photo.value, location: nil)
+        .fullScreenCover(item: $selectedPhoto) { url in
+            ZoomableImageView(url: url, location: nil)
         }
         .task {
             await loadUser()
@@ -180,6 +176,11 @@ struct UserPassportScreen: View {
         .padding(.horizontal, 16).padding(.bottom, 8)
         .disabled(friendActionLoading)
 
+        // Message button — navigation
+        .navigationDestination(isPresented: $navigateToDM) {
+            DMChatScreen(conversationId: dmConversationId ?? "", otherName: user.username)
+        }
+
         Button {
             Task {
                 dmConversationId = await dmManager.findOrCreateConversation(with: userId)
@@ -289,6 +290,10 @@ struct UserPassportScreen: View {
     }
 }
 
+extension String: @retroactive Identifiable {
+    public var id: String { self }
+}
+
 // MARK: - Sub Views
 
 private struct PassportCoverSection: View {
@@ -326,11 +331,11 @@ private struct UserPhotoView: View {
 
     var body: some View {
         if !url.isEmpty {
-            KFImage(URL(string: url))
-                .placeholder { Color(red: 0.88, green: 0.85, blue: 0.78) }
-                .fade(duration: 0.25)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
+            AsyncImage(url: URL(string: url)) { image in
+                image.resizable().aspectRatio(contentMode: .fill)
+            } placeholder: {
+                ProgressView().tint(brown)
+            }
             .frame(width: 90, height: 110)
             .clipShape(RoundedRectangle(cornerRadius: 4))
             .overlay(RoundedRectangle(cornerRadius: 4).stroke(brown.opacity(0.3), lineWidth: 1))
@@ -378,7 +383,7 @@ private struct StampsPage: View {
 
 private struct ScrapbookPage: View {
     let photos: [String]
-    @Binding var selectedPhoto: IdentifiableString?
+    @Binding var selectedPhoto: String?
     private let brown = UserPassportScreen.passportBrown
     private let page = UserPassportScreen.pageColor
 
@@ -393,16 +398,16 @@ private struct ScrapbookPage: View {
 
             LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
                 ForEach(photos, id: \.self) { url in
-                    KFImage(URL(string: url))
-                        .placeholder { Color(red: 0.88, green: 0.85, blue: 0.78) }
-                        .fade(duration: 0.25)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
+                    AsyncImage(url: URL(string: url)) { image in
+                        image.resizable().aspectRatio(contentMode: .fill)
+                    } placeholder: {
+                        Color(red: 0.88, green: 0.85, blue: 0.78)
+                    }
                     .frame(height: 200)
                     .clipShape(RoundedRectangle(cornerRadius: 4))
                     .overlay(RoundedRectangle(cornerRadius: 4).stroke(brown.opacity(0.15), lineWidth: 0.5))
                     .shadow(color: brown.opacity(0.15), radius: 3, y: 2)
-                    .onTapGesture { selectedPhoto = IdentifiableString(id: url) }
+                    .onTapGesture { selectedPhoto = url }
                 }
             }
             .padding(.horizontal, 16).padding(.bottom, 16)

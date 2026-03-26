@@ -1,5 +1,4 @@
 import SwiftUI
-import Kingfisher
 
 struct TravelMatchScreen: View {
     @StateObject private var manager = TravelMatchManager()
@@ -118,11 +117,9 @@ private struct MatchCard: View {
             HStack(spacing: 12) {
                 NavigationLink(destination: UserPassportScreen(userId: match.userId)) {
                     if !match.profileImageURL.isEmpty {
-                        KFImage(URL(string: match.profileImageURL))
-                            .placeholder { Color.ccBrown }
-                            .fade(duration: 0.25)
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
+                        AsyncImage(url: URL(string: match.profileImageURL)) { image in
+                            image.resizable().aspectRatio(contentMode: .fill)
+                        } placeholder: { Color.ccBrown }
                         .frame(width: 48, height: 48)
                         .clipShape(Circle())
                         .overlay(Circle().stroke(Color.ccGold, lineWidth: 1.5))

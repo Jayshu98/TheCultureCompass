@@ -1,10 +1,5 @@
 import SwiftUI
 
-struct IdentifiableString: Identifiable {
-    let id: String
-    var value: String { id }
-}
-
 extension Color {
     static let ccBrown = Color(red: 0.45, green: 0.25, blue: 0.12)
     static let ccGold = Color(red: 0.85, green: 0.65, blue: 0.13)

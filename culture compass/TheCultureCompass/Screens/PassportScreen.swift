@@ -1,5 +1,4 @@
 import SwiftUI
-import Kingfisher
 
 struct PassportScreen: View {
     @StateObject private var profileManager = UserProfileManager()
@@ -10,7 +9,7 @@ struct PassportScreen: View {
     @State private var scrapbookData: Data?
     @State private var isEditingBio = false
     @State private var bioText = ""
-    @State private var selectedPhoto: IdentifiableString?
+    @State private var selectedPhoto: String?
     @State private var currentPage = 0
     @State private var myFriends: [AppUser] = []
     @State private var showCountryPicker = false
@@ -99,12 +98,12 @@ struct PassportScreen: View {
                             // Photo
                             Button { showImagePicker = true } label: {
                                 if !profileManager.user.profileImageURL.isEmpty {
-                                    KFImage(URL(string: profileManager.user.profileImageURL))
-                                        .placeholder { ProgressView().tint(.ccGold) }
-                                        .fade(duration: 0.25)
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fill)
-                                        .frame(width: 100, height: 120)
+                                    AsyncImage(url: URL(string: profileManager.user.profileImageURL)) { image in
+                                        image.resizable().aspectRatio(contentMode: .fill)
+                                    } placeholder: {
+                                        ProgressView().tint(passportBrown)
+                                    }
+                                    .frame(width: 100, height: 120)
                                     .clipShape(RoundedRectangle(cornerRadius: 4))
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 4)
@@ -335,11 +334,11 @@ struct PassportScreen: View {
                             ], spacing: 10) {
                                 ForEach(profileManager.user.scrapbookPhotos, id: \.self) { url in
                                     ZStack(alignment: .topTrailing) {
-                                        KFImage(URL(string: url))
-                                            .placeholder { Color(red: 0.88, green: 0.85, blue: 0.78) }
-                                            .fade(duration: 0.25)
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fill)
+                                        AsyncImage(url: URL(string: url)) { image in
+                                            image.resizable().aspectRatio(contentMode: .fill)
+                                        } placeholder: {
+                                            Color(red: 0.88, green: 0.85, blue: 0.78)
+                                        }
                                         .frame(height: 200)
                                         .clipShape(RoundedRectangle(cornerRadius: 4))
                                         .overlay(
@@ -348,7 +347,7 @@ struct PassportScreen: View {
                                         )
                                         // Polaroid shadow effect
                                         .shadow(color: passportBrown.opacity(0.15), radius: 3, y: 2)
-                                        .onTapGesture { selectedPhoto = IdentifiableString(id: url) }
+                                        .onTapGesture { selectedPhoto = url }
 
                                         // Delete button
                                         Button {
@@ -500,8 +499,8 @@ struct PassportScreen: View {
             await profileManager.loadProfile()
             myFriends = await profileManager.loadFriends()
         }
-        .fullScreenCover(item: $selectedPhoto) { photo in
-            ZoomableImageView(url: photo.value, location: nil)
+        .fullScreenCover(item: $selectedPhoto) { url in
+            ZoomableImageView(url: url, location: nil)
         }
         .sheet(isPresented: $showCountryPicker) {
             CountryPickerSheet(
