@@ -30,6 +30,7 @@ final class AuthManager: ObservableObject {
                 self?.isAuthenticated = user != nil
                 if let uid = user?.uid {
                     await self?.fetchAppUser(uid: uid)
+                    await NotificationManager.shared.savePendingToken()
                 } else {
                     self?.appUser = nil
                 }
@@ -72,6 +73,7 @@ final class AuthManager: ObservableObject {
     }
 
     func signOut() {
+        Task { await NotificationManager.shared.clearToken() }
         do {
             try Auth.auth().signOut()
         } catch {
