@@ -1,4 +1,5 @@
 import SwiftUI
+import Kingfisher
 
 struct ZoomableImageView: View {
     let url: String
@@ -40,64 +41,53 @@ struct ZoomableImageView: View {
 
                 Spacer()
 
-                AsyncImage(url: URL(string: url)) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .scaleEffect(scale)
-                            .offset(offset)
-                            .gesture(
-                                MagnificationGesture()
-                                    .onChanged { value in
-                                        scale = lastScale * value
-                                    }
-                                    .onEnded { _ in
-                                        lastScale = scale
-                                        if scale < 1.0 {
-                                            withAnimation(.spring(response: 0.3)) {
-                                                scale = 1.0
-                                                lastScale = 1.0
-                                                offset = .zero
-                                                lastOffset = .zero
-                                            }
-                                        }
-                                    }
-                                    .simultaneously(with:
-                                        DragGesture()
-                                            .onChanged { value in
-                                                offset = CGSize(
-                                                    width: lastOffset.width + value.translation.width,
-                                                    height: lastOffset.height + value.translation.height
-                                                )
-                                            }
-                                            .onEnded { _ in
-                                                lastOffset = offset
-                                            }
-                                    )
-                            )
-                            .onTapGesture(count: 2) {
-                                withAnimation(.spring(response: 0.3)) {
-                                    if scale > 1.0 {
+                KFImage(URL(string: url))
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .scaleEffect(scale)
+                    .offset(offset)
+                    .gesture(
+                        MagnificationGesture()
+                            .onChanged { value in
+                                scale = lastScale * value
+                            }
+                            .onEnded { _ in
+                                lastScale = scale
+                                if scale < 1.0 {
+                                    withAnimation(.spring(response: 0.3)) {
                                         scale = 1.0
                                         lastScale = 1.0
                                         offset = .zero
                                         lastOffset = .zero
-                                    } else {
-                                        scale = 3.0
-                                        lastScale = 3.0
                                     }
                                 }
                             }
-                    case .failure:
-                        Image(systemName: "photo")
-                            .font(.largeTitle)
-                            .foregroundColor(.ccSubtext)
-                    default:
-                        ProgressView().tint(.ccGold)
+                            .simultaneously(with:
+                                DragGesture()
+                                    .onChanged { value in
+                                        offset = CGSize(
+                                            width: lastOffset.width + value.translation.width,
+                                            height: lastOffset.height + value.translation.height
+                                        )
+                                    }
+                                    .onEnded { _ in
+                                        lastOffset = offset
+                                    }
+                            )
+                    )
+                    .onTapGesture(count: 2) {
+                        withAnimation(.spring(response: 0.3)) {
+                            if scale > 1.0 {
+                                scale = 1.0
+                                lastScale = 1.0
+                                offset = .zero
+                                lastOffset = .zero
+                            } else {
+                                scale = 3.0
+                                lastScale = 3.0
+                            }
+                        }
                     }
-                }
 
                 Spacer()
             }

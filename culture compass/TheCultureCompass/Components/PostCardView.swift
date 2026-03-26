@@ -1,4 +1,5 @@
 import SwiftUI
+import Kingfisher
 import FirebaseAuth
 
 struct PostCardView: View {
@@ -79,26 +80,11 @@ struct PostCardView: View {
 
             // --- 2. FULL-BLEED IMAGE ---
             if !post.imageURL.isEmpty {
-                AsyncImage(url: URL(string: post.imageURL)) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(minHeight: 450)
-                            .clipped()
-                    case .failure:
-                        Rectangle()
-                            .fill(Color.ccCardBg)
-                            .frame(height: 300)
-                            .overlay(Image(systemName: "photo.fill").font(.largeTitle).foregroundColor(.ccSubtext))
-                    default:
-                        Rectangle()
-                            .fill(Color.ccCardBg)
-                            .frame(height: 300)
-                            .overlay(ProgressView().tint(.ccGold))
-                    }
-                }
+                KFImage(URL(string: post.imageURL))
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(minHeight: 450)
+                    .clipped()
             }
 
             // --- 3. INTERACTION BAR ---

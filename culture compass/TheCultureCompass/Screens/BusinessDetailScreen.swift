@@ -1,4 +1,5 @@
 import SwiftUI
+import Kingfisher
 import FirebaseAuth
 
 struct BusinessDetailScreen: View {
@@ -16,11 +17,9 @@ struct BusinessDetailScreen: View {
                 VStack(alignment: .leading, spacing: 16) {
                     // Hero image
                     if !business.imageURL.isEmpty {
-                        AsyncImage(url: URL(string: business.imageURL)) { image in
-                            image.resizable().aspectRatio(contentMode: .fill)
-                        } placeholder: {
-                            Color.ccCardBg
-                        }
+                        KFImage(URL(string: business.imageURL))
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
                         .frame(height: 220)
                         .clipShape(RoundedRectangle(cornerRadius: 16))
                         .onTapGesture { showZoomImage = true }

@@ -1,4 +1,5 @@
 import SwiftUI
+import Kingfisher
 
 struct PassportScreen: View {
     @StateObject private var profileManager = UserProfileManager()
@@ -98,12 +99,10 @@ struct PassportScreen: View {
                             // Photo
                             Button { showImagePicker = true } label: {
                                 if !profileManager.user.profileImageURL.isEmpty {
-                                    AsyncImage(url: URL(string: profileManager.user.profileImageURL)) { image in
-                                        image.resizable().aspectRatio(contentMode: .fill)
-                                    } placeholder: {
-                                        ProgressView().tint(passportBrown)
-                                    }
-                                    .frame(width: 100, height: 120)
+                                    KFImage(URL(string: profileManager.user.profileImageURL))
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(width: 100, height: 120)
                                     .clipShape(RoundedRectangle(cornerRadius: 4))
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 4)
@@ -334,11 +333,9 @@ struct PassportScreen: View {
                             ], spacing: 10) {
                                 ForEach(profileManager.user.scrapbookPhotos, id: \.self) { url in
                                     ZStack(alignment: .topTrailing) {
-                                        AsyncImage(url: URL(string: url)) { image in
-                                            image.resizable().aspectRatio(contentMode: .fill)
-                                        } placeholder: {
-                                            Color(red: 0.88, green: 0.85, blue: 0.78)
-                                        }
+                                        KFImage(URL(string: url))
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fill)
                                         .frame(height: 200)
                                         .clipShape(RoundedRectangle(cornerRadius: 4))
                                         .overlay(

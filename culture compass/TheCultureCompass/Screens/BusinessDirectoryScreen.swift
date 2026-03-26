@@ -1,4 +1,5 @@
 import SwiftUI
+import Kingfisher
 import FirebaseAuth
 
 struct BusinessDirectoryScreen: View {
@@ -142,11 +143,9 @@ private struct FeaturedBusinessCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             if !business.imageURL.isEmpty {
-                AsyncImage(url: URL(string: business.imageURL)) { image in
-                    image.resizable().aspectRatio(contentMode: .fill)
-                } placeholder: {
-                    Color.ccCardBg
-                }
+                KFImage(URL(string: business.imageURL))
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
                 .frame(width: 200, height: 120)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             }
@@ -176,11 +175,9 @@ private struct BusinessRow: View {
     var body: some View {
         HStack(spacing: 12) {
             if !business.imageURL.isEmpty {
-                AsyncImage(url: URL(string: business.imageURL)) { image in
-                    image.resizable().aspectRatio(contentMode: .fill)
-                } placeholder: {
-                    Color.ccCardBg
-                }
+                KFImage(URL(string: business.imageURL))
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
                 .frame(width: 60, height: 60)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
             } else {

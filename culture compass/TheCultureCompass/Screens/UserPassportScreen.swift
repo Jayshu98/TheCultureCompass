@@ -1,4 +1,5 @@
 import SwiftUI
+import Kingfisher
 import FirebaseAuth
 import FirebaseFirestore
 
@@ -331,11 +332,9 @@ private struct UserPhotoView: View {
 
     var body: some View {
         if !url.isEmpty {
-            AsyncImage(url: URL(string: url)) { image in
-                image.resizable().aspectRatio(contentMode: .fill)
-            } placeholder: {
-                ProgressView().tint(brown)
-            }
+            KFImage(URL(string: url))
+                .resizable()
+                .aspectRatio(contentMode: .fill)
             .frame(width: 90, height: 110)
             .clipShape(RoundedRectangle(cornerRadius: 4))
             .overlay(RoundedRectangle(cornerRadius: 4).stroke(brown.opacity(0.3), lineWidth: 1))
@@ -398,11 +397,9 @@ private struct ScrapbookPage: View {
 
             LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
                 ForEach(photos, id: \.self) { url in
-                    AsyncImage(url: URL(string: url)) { image in
-                        image.resizable().aspectRatio(contentMode: .fill)
-                    } placeholder: {
-                        Color(red: 0.88, green: 0.85, blue: 0.78)
-                    }
+                    KFImage(URL(string: url))
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
                     .frame(height: 200)
                     .clipShape(RoundedRectangle(cornerRadius: 4))
                     .overlay(RoundedRectangle(cornerRadius: 4).stroke(brown.opacity(0.15), lineWidth: 0.5))
