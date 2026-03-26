@@ -4,6 +4,7 @@ struct PassportScreen: View {
     @StateObject private var profileManager = UserProfileManager()
     @State private var showImagePicker = false
     @State private var showScrapbookPicker = false
+    @State private var showProfileConfirm = false
     @State private var imageData: Data?
     @State private var scrapbookData: Data?
     @State private var isEditingBio = false
@@ -437,11 +438,8 @@ struct PassportScreen: View {
             ImagePicker(imageData: $scrapbookData)
         }
         .onChange(of: imageData) { _, newData in
-            if let data = newData {
-                Task {
-                    await profileManager.uploadProfileImage(data)
-                    imageData = nil
-                }
+            if newData != nil {
+                showProfileConfirm = true
             }
         }
         .onChange(of: scrapbookData) { _, newData in
@@ -451,6 +449,24 @@ struct PassportScreen: View {
                     scrapbookData = nil
                 }
             }
+        }
+        .sheet(isPresented: $showProfileConfirm) {
+            ProfilePhotoConfirmSheet(
+                imageData: $imageData,
+                onAccept: {
+                    if let data = imageData {
+                        Task {
+                            await profileManager.uploadProfileImage(data)
+                            imageData = nil
+                        }
+                    }
+                    showProfileConfirm = false
+                },
+                onCancel: {
+                    imageData = nil
+                    showProfileConfirm = false
+                }
+            )
         }
         .task {
             await profileManager.loadProfile()
@@ -543,5 +559,70 @@ private struct PassportActionPill: View {
             RoundedRectangle(cornerRadius: 8)
                 .stroke(gold.opacity(0.25), lineWidth: 0.5)
         )
+    }
+}
+
+// MARK: - Profile Photo Confirmation
+
+private struct ProfilePhotoConfirmSheet: View {
+    @Binding var imageData: Data?
+    let onAccept: () -> Void
+    let onCancel: () -> Void
+
+    private let brown = Color(red: 0.35, green: 0.18, blue: 0.08)
+    private let gold = Color(red: 0.82, green: 0.68, blue: 0.21)
+
+    var body: some View {
+        ZStack {
+            LinearGradient.ccBackground.ignoresSafeArea()
+
+            VStack(spacing: 24) {
+                Text("New Profile Photo")
+                    .font(.system(size: 18, weight: .bold, design: .serif))
+                    .foregroundColor(.ccGold)
+
+                if let data = imageData, let uiImage = UIImage(data: data) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 200, height: 240)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(gold.opacity(0.4), lineWidth: 1.5)
+                        )
+                        .shadow(color: .black.opacity(0.4), radius: 10, y: 5)
+                }
+
+                Text("Use this as your passport photo?")
+                    .font(.system(size: 14, design: .serif))
+                    .foregroundColor(.ccSubtext)
+
+                HStack(spacing: 16) {
+                    Button(action: onCancel) {
+                        Text("Cancel")
+                            .font(.system(size: 14, weight: .semibold, design: .serif))
+                            .foregroundColor(.ccSubtext)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(Color.ccCardBg)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                    }
+
+                    Button(action: onAccept) {
+                        Text("Accept")
+                            .font(.system(size: 14, weight: .bold, design: .serif))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(gold)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                    }
+                }
+                .padding(.horizontal, 20)
+            }
+            .padding(24)
+        }
+        .presentationDetents([.medium])
     }
 }
