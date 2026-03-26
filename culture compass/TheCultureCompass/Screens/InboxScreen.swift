@@ -9,39 +9,77 @@ struct InboxScreen: View {
 
     var body: some View {
         ZStack {
-            LinearGradient.ccBackground.ignoresSafeArea()
+            Color.ccDarkBg.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                HStack {
-                    Text("Messages")
-                        .font(.system(size: 28, weight: .bold, design: .serif))
-                        .foregroundColor(.ccGold)
+                // ── Header ──
+                HStack(alignment: .center) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Messages")
+                            .font(.system(size: 28, weight: .bold, design: .serif))
+                            .foregroundColor(.ccLightText)
+                        if !dmManager.conversations.isEmpty {
+                            Text("\(dmManager.conversations.count) conversation\(dmManager.conversations.count == 1 ? "" : "s")")
+                                .font(.system(size: 13))
+                                .foregroundColor(.ccSubtext)
+                        }
+                    }
                     Spacer()
                     Button { showNewMessage = true } label: {
                         Image(systemName: "square.and.pencil")
-                            .font(.title3)
-                            .foregroundColor(.ccGold)
+                            .font(.system(size: 20))
+                            .foregroundStyle(LinearGradient.ccGoldShimmer)
                     }
                 }
-                .padding(.horizontal)
-                .padding(.top, 8)
+                .padding(.horizontal, 20)
+                .padding(.top, 12)
+                .padding(.bottom, 14)
 
+                // Gold accent line
+                Rectangle()
+                    .fill(LinearGradient(
+                        colors: [.clear, .ccGold.opacity(0.4), .ccGold.opacity(0.6), .ccGold.opacity(0.4), .clear],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    ))
+                    .frame(height: 1)
+
+                // ── Content ──
                 if dmManager.isLoading && dmManager.conversations.isEmpty {
                     Spacer()
-                    ProgressView().tint(.ccGold)
+                    VStack(spacing: 16) {
+                        ProgressView()
+                            .tint(.ccGold)
+                            .scaleEffect(1.2)
+                        Text("Loading messages...")
+                            .font(.system(size: 14))
+                            .foregroundColor(.ccSubtext)
+                    }
                     Spacer()
                 } else if dmManager.conversations.isEmpty {
                     Spacer()
-                    VStack(spacing: 12) {
-                        Image(systemName: "envelope.open")
-                            .font(.system(size: 40))
-                            .foregroundColor(.ccSubtext.opacity(0.4))
+                    VStack(spacing: 16) {
+                        Image(systemName: "bubble.left.and.bubble.right")
+                            .font(.system(size: 48))
+                            .foregroundStyle(LinearGradient.ccGoldShimmer)
                         Text("No messages yet")
-                            .font(.subheadline)
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(.ccLightText)
+                        Text("Start a conversation with someone")
+                            .font(.system(size: 14))
                             .foregroundColor(.ccSubtext)
-                        Text("Tap the pencil icon to start a conversation")
-                            .font(.caption)
-                            .foregroundColor(.ccSubtext.opacity(0.6))
+                        Button {
+                            showNewMessage = true
+                        } label: {
+                            Text("New Message")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundColor(.black)
+                                .padding(.horizontal, 24)
+                                .padding(.vertical, 10)
+                                .background(LinearGradient.ccGoldShimmer)
+                                .clipShape(Capsule())
+                        }
+                        .padding(.top, 4)
                     }
                     Spacer()
                 } else {
@@ -52,7 +90,9 @@ struct InboxScreen: View {
                                 NavigationLink(destination: DMChatScreen(conversationId: convo.id ?? "", otherName: otherName)) {
                                     ConvoRow(name: otherName, lastMessage: convo.lastMessage, timestamp: convo.lastTimestamp)
                                 }
-                                .listRowBackground(Color.ccCardBg.opacity(0.3))
+                                .listRowBackground(Color.clear)
+                                .listRowSeparator(.hidden)
+                                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                     Button(role: .destructive) {
                                         guard let id = convo.id else { return }
@@ -77,6 +117,63 @@ struct InboxScreen: View {
         .sheet(isPresented: $showNewMessage) {
             NewMessageSheet(dmManager: dmManager)
         }
+    }
+}
+
+
+// MARK: - Conversation Row
+
+private struct ConvoRow: View {
+    let name: String
+    let lastMessage: String
+    let timestamp: Date
+
+    private var timeAgo: String {
+        let interval = Date().timeIntervalSince(timestamp)
+        if interval < 60 { return "now" }
+        if interval < 3600 { return "\(Int(interval / 60))m" }
+        if interval < 86400 { return "\(Int(interval / 3600))h" }
+        if interval < 604800 { return "\(Int(interval / 86400))d" }
+        return timestamp.formatted(.dateTime.month(.abbreviated).day())
+    }
+
+    var body: some View {
+        HStack(spacing: 14) {
+            // Avatar with gradient ring
+            ZStack {
+                Circle()
+                    .strokeBorder(LinearGradient.ccGoldShimmer, lineWidth: 2)
+                    .frame(width: 52, height: 52)
+                Circle()
+                    .fill(Color.ccCardBg)
+                    .frame(width: 46, height: 46)
+                    .overlay(
+                        Text(String(name.prefix(1)).uppercased())
+                            .font(.system(size: 18, weight: .bold, design: .rounded))
+                            .foregroundColor(.ccGold)
+                    )
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(name)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.ccLightText)
+                    Spacer()
+                    Text(timeAgo)
+                        .font(.system(size: 12))
+                        .foregroundColor(.ccSubtext)
+                }
+                Text(lastMessage.isEmpty ? "New conversation" : lastMessage)
+                    .font(.system(size: 14))
+                    .foregroundColor(.ccSubtext)
+                    .lineLimit(1)
+            }
+        }
+        .padding(.vertical, 10)
+        .padding(.horizontal, 14)
+        .background(Color.ccCardBg.opacity(0.4))
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 }
 
@@ -117,7 +214,6 @@ private struct NewMessageSheet: View {
 
                     ScrollView {
                         LazyVStack(alignment: .leading, spacing: 0) {
-                            // Show friends first when not searching
                             if searchQuery.isEmpty && !friends.isEmpty {
                                 Text("FRIENDS")
                                     .font(.system(size: 11, weight: .bold))
@@ -131,7 +227,6 @@ private struct NewMessageSheet: View {
                                 }
                             }
 
-                            // Search results
                             if !searchQuery.isEmpty {
                                 ForEach(searchManager.results) { user in
                                     UserRow(user: user) { selectUser(user) }
@@ -200,75 +295,6 @@ private struct UserRow: View {
             }
             .padding(.horizontal)
             .padding(.vertical, 10)
-        }
-    }
-}
-
-// MARK: - Convo Row
-
-private struct ConvoRow: View {
-    let name: String
-    let lastMessage: String
-    let timestamp: Date
-
-    var body: some View {
-        HStack(spacing: 12) {
-            Circle()
-                .fill(Color.ccBrown)
-                .frame(width: 44, height: 44)
-                .overlay(
-                    Text(String(name.prefix(1)).uppercased())
-                        .font(.headline.bold())
-                        .foregroundColor(.ccGold)
-                )
-
-            VStack(alignment: .leading, spacing: 3) {
-                Text(name)
-                    .font(.subheadline.bold())
-                    .foregroundColor(.ccLightText)
-                Text(lastMessage.isEmpty ? "New conversation" : lastMessage)
-                    .font(.caption)
-                    .foregroundColor(.ccSubtext)
-                    .lineLimit(1)
-            }
-
-            Spacer()
-
-            Text(timestamp, format: .dateTime.month(.abbreviated).day())
-                .font(.system(size: 10))
-                .foregroundColor(.ccSubtext)
-        }
-        .padding(.horizontal)
-        .padding(.vertical, 12)
-        .background(Color.ccCardBg.opacity(0.3))
-    }
-}
-
-private struct ConvoRowWithDelete: View {
-    let name: String
-    let lastMessage: String
-    let timestamp: Date
-    let conversationId: String
-    let onDelete: () -> Void
-    @State private var showDeleteConfirm = false
-
-    var body: some View {
-        NavigationLink(destination: DMChatScreen(conversationId: conversationId, otherName: name)) {
-            ConvoRow(name: name, lastMessage: lastMessage, timestamp: timestamp)
-        }
-        .buttonStyle(.plain)
-        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-            Button(role: .destructive) {
-                showDeleteConfirm = true
-            } label: {
-                Label("Delete", systemImage: "trash")
-            }
-        }
-        .alert("Delete Conversation?", isPresented: $showDeleteConfirm) {
-            Button("Cancel", role: .cancel) {}
-            Button("Delete", role: .destructive) { onDelete() }
-        } message: {
-            Text("This will delete all messages. This can't be undone.")
         }
     }
 }
