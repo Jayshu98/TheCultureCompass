@@ -33,5 +33,6 @@ struct Country: Identifiable, Hashable {
         Country(name: "Bahamas", code: "BS", flag: "🇧🇸", region: "Caribbean"),
         Country(name: "Rwanda", code: "RW", flag: "🇷🇼", region: "East Africa"),
         Country(name: "Mozambique", code: "MZ", flag: "🇲🇿", region: "Southern Africa"),
+        Country(name: "Bali", code: "ID", flag: "🇮🇩", region: "Asia"),
     ]
 }
