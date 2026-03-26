@@ -12,7 +12,7 @@ struct EventsScreen: View {
             VStack(spacing: 0) {
                 HStack {
                     Text("Events")
-                        .font(.title.bold())
+                        .font(.system(size: 28, weight: .bold, design: .serif))
                         .foregroundColor(.ccGold)
                     Spacer()
                     Button { showCreate = true } label: {

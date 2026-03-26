@@ -26,7 +26,7 @@ struct ConnectScreen: View {
             VStack(spacing: 0) {
                 HStack {
                     Text("Connect")
-                        .font(.title.bold())
+                        .font(.system(size: 28, weight: .bold, design: .serif))
                         .foregroundColor(.ccGold)
                     Spacer()
                 }

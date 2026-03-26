@@ -15,7 +15,7 @@ struct TravelMatchScreen: View {
             VStack(spacing: 0) {
                 HStack {
                     Text("Travel Match")
-                        .font(.title.bold())
+                        .font(.system(size: 28, weight: .bold, design: .serif))
                         .foregroundColor(.ccGold)
                     Spacer()
                     Button { showPostListing = true } label: {

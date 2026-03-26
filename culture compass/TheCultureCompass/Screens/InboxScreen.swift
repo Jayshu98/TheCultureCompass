@@ -14,7 +14,7 @@ struct InboxScreen: View {
             VStack(spacing: 0) {
                 HStack {
                     Text("Messages")
-                        .font(.title.bold())
+                        .font(.system(size: 28, weight: .bold, design: .serif))
                         .foregroundColor(.ccGold)
                     Spacer()
                     Button { showNewMessage = true } label: {

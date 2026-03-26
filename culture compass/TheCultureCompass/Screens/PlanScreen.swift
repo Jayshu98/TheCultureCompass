@@ -10,7 +10,7 @@ struct PlanScreen: View {
             VStack(spacing: 0) {
                 HStack {
                     Text("Plan")
-                        .font(.title.bold())
+                        .font(.system(size: 28, weight: .bold, design: .serif))
                         .foregroundColor(.ccGold)
                     Spacer()
                 }

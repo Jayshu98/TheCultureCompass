@@ -14,7 +14,7 @@ struct BusinessDirectoryScreen: View {
             VStack(spacing: 0) {
                 HStack {
                     Text("Local Businesses")
-                        .font(.title.bold())
+                        .font(.system(size: 28, weight: .bold, design: .serif))
                         .foregroundColor(.ccGold)
                     Spacer()
                     Button { showAddBusiness = true } label: {

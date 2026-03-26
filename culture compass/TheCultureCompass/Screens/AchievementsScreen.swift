@@ -15,7 +15,7 @@ struct AchievementsScreen: View {
             ScrollView {
                 VStack(spacing: 16) {
                     Text("Achievements")
-                        .font(.title.bold())
+                        .font(.system(size: 28, weight: .bold, design: .serif))
                         .foregroundColor(.ccGold)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal)

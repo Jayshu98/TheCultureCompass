@@ -12,7 +12,7 @@ struct GroupTripsScreen: View {
             VStack(spacing: 0) {
                 HStack {
                     Text("Group Trips")
-                        .font(.title.bold())
+                        .font(.system(size: 28, weight: .bold, design: .serif))
                         .foregroundColor(.ccGold)
                     Spacer()
                     Button { showCreate = true } label: {
