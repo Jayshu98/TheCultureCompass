@@ -454,6 +454,7 @@ struct PassportScreen: View {
             ProfilePhotoConfirmSheet(
                 imageData: $imageData,
                 onAccept: {
+                    print("📸 Accept tapped, imageData exists: \(imageData != nil)")
                     if let data = imageData {
                         Task {
                             await profileManager.uploadProfileImage(data)

@@ -39,16 +39,25 @@ final class UserProfileManager: ObservableObject {
     }
 
     func uploadProfileImage(_ data: Data) async {
-        guard let uid else { return }
+        guard let uid else {
+            print("❌ Upload failed: No UID")
+            return
+        }
         isLoading = true
+        print("📸 Starting profile image upload for \(uid), data size: \(data.count) bytes")
         do {
             let ref = storage.reference().child("profile_images/\(uid).jpg")
             _ = try await ref.putDataAsync(data)
+            print("✅ Image uploaded to Storage")
             let url = try await ref.downloadURL()
+            print("✅ Download URL: \(url.absoluteString)")
             try await db.collection("users").document(uid).updateData(["profileImageURL": url.absoluteString])
+            print("✅ Firestore updated")
             user.profileImageURL = url.absoluteString
+            print("✅ Local user updated, UI should refresh")
         } catch {
-            errorMessage = "Failed to upload image."
+            print("❌ Upload error: \(error.localizedDescription)")
+            errorMessage = "Failed to upload image: \(error.localizedDescription)"
         }
         isLoading = false
     }
